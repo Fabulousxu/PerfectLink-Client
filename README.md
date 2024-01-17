@@ -87,58 +87,90 @@
         "error":"失败原因"
     }
 ```
-### 请求匹配 request=3, reply=3
-- 客户端向服务端发送
+### 房间流程
+#### 创建房间 request=3, reply=3
+- 客户端向服务端发送 data:{}
+- 服务器回复
 ``` Json
     "data":{
-        "mode":2,/*3,4,人数*/
+        "roomId":"id_string",
     }
 ```
-- 服务器随时回复（接收到request时一个，等待结束时一个（如果不是在匹配时就正好凑齐））
-1. 4人没凑齐：匹配中
+#### 申请房间列表 request=4, reply=4
+- 客户端向服务器发送: data:{}
+- 服务器回复：(4人以下的房间才被算在内)
 ``` Json
     "data":{
-        "state":0
-    }
-```
-2. 4人凑齐了，匹配
-``` Json
-    "data":{
-        "state":1,
-        "roomInfo":{
-            "id":"id_string",
-            "map":{
-                "width":10,
-                "height":10,
-                "blocks":[
-                    [0,1,2,3,],
-                    [],//...先x后y的索引
-                ]
-            }
-        },
-        "playerInfo":[
+        "roomsInfo":[
             {
-                "id":"id_string",
-                "nickname":"昵称"
-            }
-            //, ...
+                "roomId":"id_string",
+                "hostNickname":"房主昵称",
+                "playerCount":1,//2,3
+            },
+            //...
         ]
     }
 ```
-可以匹配时自主退出
-### 取消匹配 request=4, reply=4
-- 客户端向服务器发送: data:{}
-- 服务器回复：
+#### 加入房间 request=5, reply=5
+- 客户端向服务器发送: 
 ``` Json
     "data":{
-        "state":true //or false，如果已经凑齐了
+        "roomId":"id_string"
     }
 ```
-
-注意：服务器需要精准找到队列里的这个人剔除
-
+- 服务器向客户端发送
+``` Json
+    "data":{
+        "state":true,//false，如果已经满员就不会加入成功
+    }
+```
+#### 退出房间 request=6, reply=6
+- 客户端向服务器发送 data:{}
+- 服务器给回复：
+``` Json
+    "data":{
+        "state":true,//false，如果已经开始就不会退出成功
+    }
+```
+#### 房间游戏开始 request=7, reply=7
+- 客户端(限房主)向服务器发送 data:{}
+- 服务器回复（给玩家们同时）
+``` Json
+    "data":{
+        "state":true,
+        "map":[
+            [0,1,2,],
+            //先x后y的方块
+        ],
+        "players":[
+            {
+                "id":"id_string",
+                "nickname":"昵称"
+            },
+        ]
+    }
+```
+或者不成功
+``` Json
+    "data":{
+        "state":false,
+        "error":"不是房主/人数不够"
+    }
+```
+#### 房间信息更新（未开始并且人数有变动时）reply=8
+服务器回复
+``` Json
+    "data":{
+        "players":[
+            {
+                "id":"id_string",
+                "nickname":"昵称"
+            },
+        ]
+    }
+```
 ### 游戏过程
-#### 移动 request=5, reply=5
+#### 移动 request=8, reply=9
 - 客户端向服务器发送
 ``` Json
     "data":{
@@ -153,7 +185,7 @@
         "state":true//成功，false没动
     }
 ```
-#### 方块变动 reply=6
+#### 方块变动 reply=10
 - 服务器发送
 ``` Json
     "data":{
@@ -162,7 +194,7 @@
         "state":0//,1,2,3
     }
 ```
-#### 道具变动 reply=7
+#### 道具变动 reply=11
 - 服务器发送
 ``` Json
     "data":{
@@ -172,7 +204,7 @@
         "state":0//,1,2,3
     }
 ```
-#### 道具效果 reply=8
+#### 道具效果 reply=12
 - 服务器群发/发送
 ``` Json
     "data":{
@@ -180,7 +212,7 @@
         //TODO
     }
 ```
-#### 分数变动 reply=9
+#### 分数变动 reply=13
 - 服务器群发
 ``` Json
     "data":{
@@ -193,8 +225,17 @@
         ]
     }
 ```
-#### 游戏结束 reply=10
+#### 游戏结束 reply=14
 - 服务器群发 data:{}
->## 服务器
-
->## 客户端
+### 未知错误 reply=-1
+由服务器向客户端发送未知错误，如未识别的request代号等。
+``` Json
+    "data":{
+        "error":"错误描述"
+    }
+```
+>## 服务器代码架构
+### 可视化
+### 通信处理
+### 游戏处理
+>## 客户端代码架构
