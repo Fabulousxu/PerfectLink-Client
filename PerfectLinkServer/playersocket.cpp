@@ -19,7 +19,7 @@ QJsonObject PlayerSocket::requestInterpreter(QByteArray bytesMsg)
     auto doc=QJsonDocument::fromJson(bytesMsg);
     return doc.object();
 }
-void PlayerSocket::reply(EReplyCode replyCode, const QJsonObject &data)
+void PlayerSocket::reply(Reply::EType replyCode, const QJsonObject &data)
 {
     QJsonObject msg({
         {"reply",replyCode},
@@ -34,32 +34,41 @@ void PlayerSocket::onRead()
     int requestCode=jsonMsg.value("request").toInt();
     QJsonObject data=jsonMsg.value("data").toObject({});
     switch(requestCode){
-    case REGISTER:
+    case Request::REGISTER:
         onRegister(data.value("nickname").toString(),data.value("password").toString());
         break;
-    case LOGOFF:
+    case Request::LOGOFF:
         onLogOff(data.value("id").toString());
         break;
-    case LOGIN:
+    case Request::LOGIN:
         onLogIn(data.value("id").toString(),data.value("password").toString());
         break;
-    case START_MATCH:
-        onStartMatch(data.value("mode").toInt());
+    case Request::CREATE_ROOM :
+        onCreateRoom();
         break;
-    case CANCEL_MATCH:
-        onCancelMatch();
+    case Request::REQUIRE_ROOMS :
+        onRequireRooms();
         break;
-    case MOVE:
+    case Request::ENTER_ROOM:
+        onEnterRoom(data.value("roomId").toString());
+        break;
+    case Request::EXIT_ROOM:
+        onExitRoom();
+        break;
+    case Request::BEGIN_GAME:
+        onBeginGame();
+        break;
+    case Request::MOVE:
         onMove(data.value("direction").toInt());
         break;
     default:
-        reply(ERROR, QJsonObject({
+        reply(Reply::ERROR, QJsonObject({
             {"error", "Wrong request code<"+QString::number(requestCode)+">"}
         }));
     }
 }
 
-//TODO: 处理过程
+//TODO: 处理Request的过程
 void PlayerSocket::onDisconnect()//断连槽函数
 {
 
@@ -80,12 +89,27 @@ void PlayerSocket::onLogIn(QString id, QString password)
 
 }
 
-void PlayerSocket::onStartMatch(int mode)
+void PlayerSocket::onCreateRoom()
 {
 
 }
 
-void PlayerSocket::onCancelMatch()
+void PlayerSocket::onRequireRooms()
+{
+
+}
+
+void PlayerSocket::onEnterRoom(QString roomId)
+{
+
+}
+
+void PlayerSocket::onExitRoom()
+{
+
+}
+
+void PlayerSocket::onBeginGame()
 {
 
 }
