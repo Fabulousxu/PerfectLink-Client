@@ -1,10 +1,11 @@
-#pragma once
+#ifndef MAINWINDOW_H
+#define MAINWINDOW_H
 
-#include <QtWidgets/QWidget>
-#include "ui_mainwindow.h"
+#include <QMainWindow>
+#include <QTcpServer>
 
 QT_BEGIN_NAMESPACE
-namespace Ui { class MainWindowClass; };
+namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
 class MainWindow : public QWidget
@@ -16,5 +17,9 @@ public:
     ~MainWindow();
 
 private:
-    Ui::MainWindowClass *ui;
+    Ui::MainWindow *ui;
+    QTcpServer *server;
+private slots:
+    void onNewConnection();
 };
+#endif // MAINWINDOW_H
