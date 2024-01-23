@@ -41,17 +41,17 @@ class Game : public QObject {
 	Q_OBJECT
 
 public:
-	Game();
+    explicit Game(QObject *parent=nullptr);
 
 	int width() { return block.size(); }
 	int height() { return block.empty() ? 0 : block[0].size(); }
 	QVector<QVector<int>> getBlock() { return block; } /* 获取方块 */
 	void initializeBlock(int h, int w, QVector<int> pattern); /* 初始化地图 */
-	void move(const QString &id, Direction d); /* 人物移动 */
+    void move(quint64 id, Direction d); /* 人物移动 */
 
 private:
 	QVector<QVector<int>> block; /* 游戏方块图, block[x][y]即为坐标为(x, y)的方块, 涵盖整个地图包括四周墙壁 */
-	QMap<QString, Player> player; /* 用户id-玩家表 */
+    QMap<quint64 , Player> player; /* 用户id-玩家表 */
 
 	int &getBlock(const QPoint &p) { return block[p.x()][p.y()]; } /* 通过坐标获取方块引用 */
 
@@ -60,11 +60,11 @@ private:
 	QVector<QPoint> matchTurn(const QPoint &a, const QPoint &b); /* 一次转弯匹配 */
 	QVector<QPoint> matchTurn2(const QPoint &a, const QPoint &b); /* 二次转弯匹配 */
 
-	void select(const QString &id, const QPoint &p); /* 某玩家选中某位置的方块 */
+    void select(quint64 id, const QPoint &p); /* 某玩家选中某位置的方块 */
 
 signals:
-	void showMovePlayer(const QString &id, bool flag, Direction d); /* 显示指定玩家移动, 给定是否改变位置以及移动方向 */
-	void showSelectBlock(const QString &id, const QPoint &p); /* 显示指定方块被选中 */
-	void showUnselectBlock(const QString &id, const QPoint &p); /* 显示指定方块取消选中 */
-	void showMatchPath(const QString &id, const QVector<QPoint> &path); /* 显示匹配路径 */
+    void showMovePlayer(quint64 id, bool flag, Direction d); /* 显示指定玩家移动, 给定是否改变位置以及移动方向 */
+    void showSelectBlock(quint64 id, const QPoint &p); /* 显示指定方块被选中 */
+    void showUnselectBlock(quint64 id, const QPoint &p); /* 显示指定方块取消选中 */
+    void showMatchPath(quint64 id, const QVector<QPoint> &path); /* 显示匹配路径 */
 };

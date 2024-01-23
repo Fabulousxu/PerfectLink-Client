@@ -9,10 +9,7 @@ Player::Player(QPoint p)
     moveCoolDownTimer->setInterval(moveCoolDown);
     moveCoolDownTimer->setSingleShot(true);
 }
-
-Game::Game() {
-}
-
+Game::Game(QObject *parent):QObject(parent){}
 void Game::initializeBlock(int h, int w, QVector<int> pattern) {
     int pos = 0, num = 0, total = h * w;
     block = QVector<QVector<int>>(w + SURROUNDING * 2, QVector<int>(h + SURROUNDING * 2, 0));
@@ -42,7 +39,7 @@ void Game::initializeBlock(int h, int w, QVector<int> pattern) {
     } while (false);
 }
 
-void Game::move(const QString &id, Direction d) {
+void Game::move(quint64 id, Direction d) {
     Player &player = this->player[id];
     if (player.moveCoolDownTimer->isActive()) { return; }
     player.moveCoolDownTimer->start();
@@ -154,14 +151,16 @@ QVector<QPoint> Game::matchTurn2(const QPoint &a, const QPoint &b) {
     } return path;
 }
 
-void Game::select(const QString &id, const QPoint &p) {
+void Game::select(quint64 id, const QPoint &p) {
     if (isFloor(getBlock(p)) || isWall(getBlock(p)) || isRemoving(getBlock(p))) { return; }
     Player &player = this->player[id];
     if (player.select && *player.select == p) { return; }
-    for (auto it = this->player.begin(); it != this->player.end(); ++it) {
+    for (auto it = this->player.begin(); it != this->player.end(); ++it)
+    {
         if (it.key() == id) { continue; }
         if (it->select) { delete it->select; it->select = nullptr; }
-    } emit showSelectBlock(id, p);
+    }
+    emit showSelectBlock(id, p);
     if (player.select) {
         auto oldSelect = *player.select;
         auto path = match(oldSelect, p);
