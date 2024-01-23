@@ -6,6 +6,7 @@
 #include <QComboBox>
 #include <QTextBrowser>
 #include <QTableWidget>
+class Room;
 struct Reply{
     enum EType{
         ERROR=-1,//错误
@@ -22,7 +23,8 @@ struct Reply{
         BLOCK_CHANGE,//方块移动
         TOOL_CHANGE,//道具变动
         TOOL_EFFECT,//道具效果
-        MARK //分数变动
+        MARK, //分数变动
+        END_GAME //游戏结束
     };
 };
 struct Request{
@@ -43,16 +45,18 @@ class PlayerSocket : public QTcpSocket
 {
     Q_OBJECT
 private:
+    QTableWidget *userTable;
+    QTextBrowser *stateDisplay;
+    quint64 id; //0是未分配、未登录
+    Room *gamingRoom;
     enum EState{
-        OFFLINE,//未登录
+        OFFLINE,//未登录，注册全程应为此状态，登录前为此状态
         ONLINE,//登录但未游戏
         IN_ROOM,//在房间里但没开始游戏
         GAMING //正在游戏中
     } state; //OFFLINE->ONLINE->  IN_ROOM->GAMING->ONLINE->  ...->OFFLINE
-    QTableWidget *userTable;
-    QTextBrowser *stateDisplay;
 public:
-    PlayerSocket(QObject *parent=nullptr);
+    explicit PlayerSocket(QObject *parent=nullptr);
     /**
      * @brief 初始化，传入控件指针是为了方便随时加信息
      * @param userTable_ 控件
@@ -71,13 +75,16 @@ public:
      * @return 一个JSON对象
      */
     static QJsonObject requestInterpreter(QByteArray bytesMsg);
+
+    QString getIdString() const {return QString::number(id);}
+    quint64 getId() const {return id;} //登录之后就应该是非0的id
     //响应各种请求
     void onRegister(QString nickname, QString password);
-    void onLogOff(QString id);
-    void onLogIn(QString id, QString password);
+    void onLogOff(quint64 id);
+    void onLogIn(quint64 id, QString password);
     void onCreateRoom();
     void onRequireRooms();
-    void onEnterRoom(QString roomId);
+    void onEnterRoom(quint64 roomId);
     void onExitRoom();
     void onBeginGame();
     void onMove(int direction);
