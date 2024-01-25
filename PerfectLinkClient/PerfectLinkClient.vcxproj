@@ -89,8 +89,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="cell.cpp" />
-    <ClCompile Include="player.cpp" />
     <QtRcc Include="mainwindow.qrc" />
     <QtUic Include="gamewindow.ui" />
     <QtUic Include="mainwindow.ui" />
@@ -107,12 +105,6 @@
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="gamecanvas.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <QtMoc Include="player.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <QtMoc Include="cell.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

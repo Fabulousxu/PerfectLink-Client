@@ -52,24 +52,12 @@
     <ClCompile Include="gamecanvas.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="player.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="cell.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="gamewindow.h">
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="gamecanvas.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
-    <QtMoc Include="player.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
-    <QtMoc Include="cell.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

@@ -15,6 +15,7 @@ class GameWindow : public QWidget
 public:
 	GameWindow(QWidget *parent = nullptr);
 	~GameWindow();
+	void paintEvent(QPaintEvent *event) override;
 
 private:
 	Ui::GameWindowClass *ui;

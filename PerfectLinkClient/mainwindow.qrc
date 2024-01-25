@@ -1,4 +1,39 @@
 <RCC>
-    <qresource prefix="MainWindow">
+    <qresource prefix="/MainWindow">
+        <file>image/floor1.png</file>
+        <file>image/floor2.png</file>
+        <file>image/floor3.png</file>
+        <file>image/floor4.png</file>
+        <file>image/wall1.png</file>
+        <file>image/wall2.png</file>
+        <file>image/wall3.png</file>
+        <file>image/player1_down.png</file>
+        <file>image/player1_left.png</file>
+        <file>image/player1_right.png</file>
+        <file>image/player1_up.png</file>
+        <file>image/player2_down.png</file>
+        <file>image/player2_left.png</file>
+        <file>image/player2_right.png</file>
+        <file>image/player2_up.png</file>
+        <file>image/player3_down.png</file>
+        <file>image/player3_left.png</file>
+        <file>image/player3_right.png</file>
+        <file>image/player3_up.png</file>
+        <file>image/player4_down.png</file>
+        <file>image/player4_left.png</file>
+        <file>image/player4_right.png</file>
+        <file>image/player4_up.png</file>
+        <file>image/player5_down.png</file>
+        <file>image/player5_left.png</file>
+        <file>image/player5_right.png</file>
+        <file>image/player5_up.png</file>
+        <file>image/player6_down.png</file>
+        <file>image/player6_left.png</file>
+        <file>image/player6_right.png</file>
+        <file>image/player6_up.png</file>
+        <file>image/player7_down.png</file>
+        <file>image/player7_left.png</file>
+        <file>image/player7_right.png</file>
+        <file>image/player7_up.png</file>
     </qresource>
 </RCC>
