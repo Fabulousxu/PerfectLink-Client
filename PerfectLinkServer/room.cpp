@@ -7,7 +7,7 @@ QMutex id_room_mutex;
 constexpr quint64 ID_MAX=9007199254740991;
 QMap<quint64, Room*> id_room_map;
 extern QMap<quint64, PlayerInfo*> id_player_map;
-Room * Room::addRoom(PlayerSocket *host)
+Room * Room::add(PlayerSocket *host)
 {
     QMutexLocker locker(&id_room_mutex);
     quint64 id=QRandomGenerator::global()->bounded(1ull, ID_MAX);
@@ -16,9 +16,14 @@ Room * Room::addRoom(PlayerSocket *host)
     return new Room(host, id, host);
 }
 
-void Room::removeRoom(quint64)
+bool Room::remove(quint64 id)
 {
-    //TODO
+    if(!id_room_map.contains(id)) return false;
+    QMutexLocker locker(&id_room_mutex);
+    auto pRoom=id_room_map.value(id);
+    id_room_map.remove(id);
+    pRoom->deleteLater();
+    return true;
 }
 
 Room::Room(PlayerSocket *host, uint64_t id_, QObject *parent)
