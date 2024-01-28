@@ -52,6 +52,15 @@
     <ClCompile Include="gamecanvas.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="startwindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="homewindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="socket.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="gamewindow.h">
@@ -60,10 +69,30 @@
     <QtMoc Include="gamecanvas.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="startwindow.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="homewindow.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="socket.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="gamewindow.ui">
       <Filter>Form Files</Filter>
     </QtUic>
+    <QtUic Include="startwindow.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="homewindow.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="MinecraftAE.ttf">
+      <Filter>Resource Files</Filter>
+    </Font>
   </ItemGroup>
 </Project>

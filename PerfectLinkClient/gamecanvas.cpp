@@ -57,11 +57,55 @@ Player::Player(int x, int y, int pt, QWidget *parent) : Cell(x, y, parent) {
 	pattern = pt;
 	direction = Down;
 	position = QPoint(x, y);
+	moveTimer = new QTimer(this);
+	moveTimer->setInterval(REFRESH_TIME);
 }
 
 void Player::setPosition(int x, int y) {
 	position = QPoint(x, y);
-	move(x * size, y * size);
+	move(position * Cell::size);
+}
+
+void Player::setDirection(Direction d) {
+	direction = d;
+	update();
+}
+
+void Player::moveAnimation(Direction d, bool flag) {
+	static double rate = (double)REFRESH_TIME / (double)MOVE_TIME;
+	static int maxCount = MOVE_TIME / REFRESH_TIME;
+	static int count;
+	setDirection(d);
+	moveTimer->disconnect();
+	if (moveTimer->isActive()) {
+		moveTimer->stop();
+		move(this->getPosition() * Cell::size);
+	}
+	if (flag) {
+		position = neighbor(position, d);
+		connect(moveTimer, &QTimer::timeout, this, [this, d] {
+			++count;
+			if (count >= maxCount) {
+				move(this->getPosition() * Cell::size);
+				this->moveTimer->stop();
+			} else { move(this->pos() + directionPoint(d) * Cell::size * rate); }
+			}
+		);
+	} else {
+		connect(moveTimer, &QTimer::timeout, this, [this, d] {
+			++count;
+			if (count >= maxCount) {
+				move(this->getPosition() * Cell::size);
+				this->moveTimer->stop();
+			} else if (count >= maxCount / 2) {
+				move(this->pos() - directionPoint(d) * Cell::size * 0.2 * rate);
+			} else { move(this->pos() + directionPoint(d) * Cell::size * 0.2 * rate); }
+			}
+		);
+	}
+	count = 0;
+	move(this->pos() + directionPoint(d) * Cell::size * rate);
+	moveTimer->start();
 }
 
 void Player::paintEvent(QPaintEvent *event) {
@@ -125,12 +169,24 @@ void GameCanvas::appendPlayer(quint64 id, int pt) {
 }
 
 void GameCanvas::removePlayer(quint64 id) {
-	if (player.contains(id)) {
-		delete player[id];
-		player.remove(id);
+	auto it = player.find(id);
+	if (it != player.end()) {
+		delete it.value();
+		player.erase(it);
 	}
 }
 
-void GameCanvas::initialPlayer() {
+void GameCanvas::movePlayer(quint64 id, Direction d, bool flag) {
+	auto it = player.find(id);
+	if (it != player.end()) {
+		it.value()->moveAnimation(d, flag);
+	}
 }
 
+void GameCanvas::initializePlayer(quint64 id, QPoint p) {
+	auto it = player.find(id);
+	if (it != player.end()) {
+		it.value()->setPosition(p);
+		it.value()->setDirection(Down);
+	}
+}

@@ -5,13 +5,16 @@
 #include <qrandom.h>
 #include <qvector.h>
 #include <qmap.h>
+#include <qtimer.h>
 
 #define WALL_WIDTH 1 /* 外圈墙格数 */
 #define SURROUNDING 3 /* 外圈墙和地板格数 */
-#define MATCHING 700 /* 匹配消除时间700ms */
-#define MOVE_TIME 100 /* 人物移动动画时间100ms */
+#define MATCHING 700 /* 匹配消除时间ms */
+#define MOVE_TIME 200 /* 人物移动动画时间ms */
+#define REFRESH_TIME 10 /* 人物移动每帧时间ms */ 
 
 enum Direction { Up, Left, Down, Right };
+inline QPoint directionPoint(Direction d) { return d & 1 ? QPoint(d - 2, 0) : QPoint(0, d - 1); }
 inline Direction opposite(Direction d) { return (Direction)(d < Down ? d + 2 : d - 2); }
 inline QPoint neighbor(int x, int y, Direction d) { return d & 1 ? QPoint(x + d - 2, y) : QPoint(x, y + d - 1); }
 inline QPoint neighbor(const QPoint &p, Direction d) { return neighbor(p.x(), p.y(), d); }
@@ -44,14 +47,17 @@ public:
 	Player(QPoint p, int pt, QWidget *parent) : Player(p.x(), p.y(), pt, parent) {}
 	QPoint getPosition() { return position; }
 	void setPosition(int x, int y);
-	void setPosition(QPoint p) { setPosition(p.x(), y()); }
+	void setPosition(QPoint p) { setPosition(p.x(), p.y()); }
+	void setDirection(Direction d);
+	void moveAnimation(Direction d, bool flag);
 	void paintEvent(QPaintEvent *event) override;
 	static void loadPicture();
-//private:
+private:
 	int pattern;
 	QPoint position;
 	Direction direction;
 	static QPixmap *picture;
+	QTimer *moveTimer;
 };
 
 class GameCanvas : public QWidget {
@@ -64,8 +70,9 @@ public:
 	void setPattern(const QVector<QVector<int>> &p);
 	void appendPlayer(quint64 id, int pt); /* 当有新的玩家进入房间时使用该方法 */
 	void removePlayer(quint64 id); /* 当有玩家退出房间时使用该方法 */
-	void initialPlayer(); /* 当游戏准备开始时, 使用此方法将玩家移动至初始位置 */
-//private:
+	void movePlayer(quint64 id, Direction d, bool flag); /* 移动玩家 */
+	void initializePlayer(quint64 id, QPoint p); /* 用于游戏开始时设置玩家初始位置 */
+private:
 	QVector<QVector<Block *>> block;
 	QMap<quint64, Player *> player; /* 上限4人 */
 };
