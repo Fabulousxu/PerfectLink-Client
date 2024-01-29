@@ -1,4 +1,4 @@
-#include "mainwindow.h"
+﻿#include "mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QWidget(parent)
@@ -11,36 +11,35 @@ MainWindow::MainWindow(QWidget *parent)
     homeWindow = new HomeWindow(this);
     gameWindow = new GameWindow(this);
 
+    /* 注册处理 */
     connect(startWindow, &StartWindow::signupRequest, socket, &Socket::onSignupRequest);
-    connect(startWindow, &StartWindow::loginRequest, socket, &Socket::onLoginRequest);
     connect(socket, &Socket::signupSuccess, startWindow, &StartWindow::onSignupSuccess);
     connect(socket, &Socket::signupFail, startWindow, &StartWindow::onSignupFail);
+
+    /* 登录处理 */
+    connect(startWindow, &StartWindow::loginRequest, socket, &Socket::onLoginRequest);
     connect(socket, &Socket::loginSuccess, startWindow, &StartWindow::onLoginSuccess);
     connect(socket, &Socket::loginFail, startWindow, &StartWindow::onLoginFail);
     connect(startWindow, &StartWindow::loginSuccess, this, &MainWindow::onLoginSuccess);
-    connect(homeWindow, &HomeWindow::logoffRequest, this, [this] { socket->onLogoffRequest(playerMessage.id); });
+
+    /* 登出处理 */
+    connect(homeWindow, &HomeWindow::logoffRequest, socket, [this] { socket->onLogoffRequest(accountInfomation.id); });
     connect(socket, &Socket::logoffSuccess, homeWindow, &HomeWindow::onLogoffSuccess);
     connect(socket, &Socket::logoffFail, homeWindow, &HomeWindow::onLogoffFail);
     connect(homeWindow, &HomeWindow::logoffSuccess, this, &MainWindow::onLogoffSuccess);
 
+
     socket->connectToHost(SERVER_IP, SERVER_PORT);
-
     startWindow->show();
-    //homeWindow->show();
-    //gameWindow->show();
-}
 
-MainWindow::~MainWindow()
-{
-    //delete ui;
 }
 
 void MainWindow::onLoginSuccess(quint64 id, const QString &nickname) {
+    homeWindow->setAccountInfomation(id, nickname);
     startWindow->hide();
-    homeWindow->setAccountMessage(id, nickname);
     homeWindow->show();
-    playerMessage.id = id;
-    playerMessage.nickname = nickname;
+    accountInfomation.id = id;
+    accountInfomation.nickname = nickname;
 }
 
 void MainWindow::onLogoffSuccess() {

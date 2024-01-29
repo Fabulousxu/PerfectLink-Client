@@ -2,6 +2,12 @@
 #define PLAYERINFO_H
 #include <QMutex>
 #include <QMap>
+#include <qjsonarray.h>
+#include <qjsondocument.h>
+#include <qjsonobject.h>
+#include <qjsonvalue.h>
+#include <qfile.h>
+#include <qtextstream.h>
 
 class PlayerInfo
 {
@@ -38,6 +44,42 @@ public:
      * @return 一样为true
      */
     bool isPasswordMatched(const QString &password_) const {return password_==password;}
+
+    /// <summary>
+    /// 向内存账户表中添加一个账户
+    /// </summary>
+    static void add(quint64 id, const QString &nickname, const QString &password);
+
+    /// <summary>
+    /// 用于服务器开始运行时从json文件载入账户数据
+    /// </summary>
+    /// <returns>载入是否成功</returns>
+    static bool load();
 };
 
+QMutex id_player_mutex;
+QMap<quint64, PlayerInfo *> id_player_map;
+QJsonObject accountsJson;
+constexpr quint64 ID_MAX = 0x1fffffffffffff;
+#define ACCOUNT_FILE_PATH "./data/account.json"
+
+#if 0 
+./data/account.json格式示例:
+
+{
+    "10001": {
+        "nickname": "user1",
+        "password": "psw1"
+    },
+    "10002": {
+        "nickname": "user2",
+        "password": "psw2"
+    }
+}
+
+#endif
+
 #endif // PLAYERINFO_H
+
+
+

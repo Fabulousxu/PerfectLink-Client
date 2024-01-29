@@ -1,10 +1,10 @@
-#pragma once
+﻿#pragma once
 
 #include <QtWidgets/QWidget>
 #include "ui_mainwindow.h"
-#include "gamewindow.h"
 #include "startwindow.h"
 #include "homewindow.h"
+#include "gamewindow.h"
 #include "socket.h"
 
 QT_BEGIN_NAMESPACE
@@ -17,10 +17,7 @@ class MainWindow : public QWidget
 
 public:
     MainWindow(QWidget *parent = nullptr);
-    ~MainWindow();
-
-    void onLoginSuccess(quint64 id, const QString &nickname);
-    void onLogoffSuccess();
+    ~MainWindow() { delete ui; }
 
 private:
     Ui::MainWindowClass *ui;
@@ -28,9 +25,12 @@ private:
     StartWindow *startWindow;
     HomeWindow *homeWindow;
     GameWindow *gameWindow;
-
-    struct PlayerMessage {
-        QString nickname;
+    struct AccountInfomation {
         quint64 id;
-    } playerMessage;
+        QString nickname;
+    } accountInfomation; /* 账户信息 */
+
+public slots:
+    void onLoginSuccess(quint64 id, const QString &nickname); /* 登录成功 */
+    void onLogoffSuccess(); /* 登出成功 */
 };

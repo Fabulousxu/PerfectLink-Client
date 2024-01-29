@@ -98,6 +98,7 @@
     <ClCompile Include="game.cpp" />
     <ClCompile Include="mainwindow.cpp" />
     <ClCompile Include="main.cpp" />
+    <None Include="data\account.json" />
     <None Include="PerfectLinkServer.ico" />
     <ResourceCompile Include="PerfectLinkServer.rc" />
   </ItemGroup>

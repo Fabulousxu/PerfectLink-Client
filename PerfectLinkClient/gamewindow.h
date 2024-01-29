@@ -14,7 +14,7 @@ class GameWindow : public QWidget
 
 public:
 	GameWindow(QWidget *parent = nullptr);
-	~GameWindow();
+	~GameWindow() { delete ui; }
 
 private:
 	Ui::GameWindowClass *ui;

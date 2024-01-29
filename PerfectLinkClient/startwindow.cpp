@@ -18,55 +18,63 @@ StartWindow::StartWindow(QWidget *parent)
 	connect(errorShowTimer, &QTimer::timeout, this, [this] { ui->errorLabel->clear(); });
 	connect(ui->shiftButton, &QPushButton::clicked, this, &StartWindow::onShiftButton);
 	connect(ui->submitButton, &QPushButton::clicked, this, &StartWindow::onSubmitButton);
-	connect(ui->idInput, &QLineEdit::returnPressed, this, [this] { ui->passwardInput->setFocus(); });
-	connect(ui->passwardInput, &QLineEdit::returnPressed, this, &StartWindow::onSubmitButton);
+	connect(ui->idInput, &QLineEdit::returnPressed, this, [this] { ui->passwordInput->setFocus(); });
+	connect(ui->passwordInput, &QLineEdit::returnPressed, this, &StartWindow::onSubmitButton);
 }
 
-StartWindow::~StartWindow()
+void StartWindow::onSignupSuccess(quint64 id) 
 {
-	delete ui;
-}
-
-void StartWindow::onSignupSuccess(quint64 id) {
-	showError("注册成功!您的账号为" + QString::number(id));
+	showError("注册成功! 您的账号为" + QString::number(id));
 	ui->idInput->setReadOnly(false);
-	ui->passwardInput->setReadOnly(false);
+	ui->passwordInput->setReadOnly(false);
+	ui->submitButton->setEnabled(true);
+	ui->shiftButton->setEnabled(true);
 }
 
-void StartWindow::onSignupFail(const QString &error) {
-	showError("注册失败!原因:" + error);
+void StartWindow::onSignupFail(const QString &error) 
+{
+	showError("注册失败! 原因: " + error);
 	ui->idInput->setReadOnly(false);
-	ui->passwardInput->setReadOnly(false);
+	ui->passwordInput->setReadOnly(false);
+	ui->submitButton->setEnabled(true);
+	ui->shiftButton->setEnabled(true);
 }
 
-void StartWindow::onLoginSuccess(const QString &nickname) {
+void StartWindow::onLoginSuccess(const QString &nickname) 
+{
 	emit loginSuccess(ui->idInput->text().toULongLong(), nickname);
 	ui->idInput->clear();
-	ui->passwardInput->clear();
+	ui->passwordInput->clear();
 	ui->errorLabel->clear();
 	ui->idInput->setReadOnly(false);
-	ui->passwardInput->setReadOnly(false);
+	ui->passwordInput->setReadOnly(false);
+	ui->submitButton->setEnabled(true);
+	ui->shiftButton->setEnabled(true);
 }
 
-void StartWindow::onLoginFail(const QString &error) {
-	showError("登录失败!原因:" + error);
-	ui->passwardInput->clear();
+void StartWindow::onLoginFail(const QString &error) 
+{
+	showError("登录失败! 原因: " + error);
+	ui->passwordInput->clear();
 	ui->idInput->setReadOnly(false);
-	ui->passwardInput->setReadOnly(false);
+	ui->passwordInput->setReadOnly(false);
+	ui->submitButton->setEnabled(true);
+	ui->shiftButton->setEnabled(true);
 }
 
-void StartWindow::onShiftButton() {
+void StartWindow::onShiftButton() 
+{
 	ui->idInput->clear();
-	ui->passwardInput->clear();
+	ui->passwordInput->clear();
 	if (flag) {
-		ui->idLabel->setText("昵称");
-		ui->passwardInput->setEchoMode(QLineEdit::Normal);
+		ui->idLabel->setText("昵称  ");
+		ui->passwordInput->setEchoMode(QLineEdit::Normal);
 		ui->shiftButton->setText("登录账号");
 		ui->submitButton->setText("注册");
 		ui->idInput->setValidator(new QRegularExpressionValidator());
 	} else {
-		ui->idLabel->setText("账号");
-		ui->passwardInput->setEchoMode(QLineEdit::Password);
+		ui->idLabel->setText("账号  ");
+		ui->passwordInput->setEchoMode(QLineEdit::Password);
 		ui->shiftButton->setText("注册账号");
 		ui->submitButton->setText("登录");
 		ui->idInput->setValidator(new QRegularExpressionValidator(QRegularExpression("[0-9]+$")));
@@ -74,42 +82,37 @@ void StartWindow::onShiftButton() {
 	flag = !flag;
 }
 
-void StartWindow::onSubmitButton() {
+void StartWindow::onSubmitButton() 
+{
+	auto id = ui->idInput->text();
+	auto password = ui->passwordInput->text();
+	if (password.isEmpty()) {
+		showError("密码不能为空!");
+		return;
+	}
 	if (flag) {
-		const QString &id = ui->idInput->text();
-		const QString &passward = ui->passwardInput->text();
 		if (id.isEmpty()) {
 			showError("账号不能为空!");
 			return;
 		}
-		if (passward.isEmpty()) {
-			showError("密码不能为空!");
-			return;
-		}
 		ui->errorLabel->setText("登录中...");
-		ui->idInput->setReadOnly(true);
-		ui->passwardInput->setReadOnly(true);
-		emit loginRequest(id.toULongLong(), passward);
+		emit loginRequest(id.toULongLong(), password);
 	} else {
-		const QString &nickname = ui->idInput->text();
-		const QString &passward = ui->passwardInput->text();
-		if (nickname.isEmpty()) {
+		if (id.isEmpty()) {
 			showError("昵称不能为空!");
 			return;
 		}
-		if (passward.isEmpty()) {
-			showError("密码不能为空!");
-			return;
-		}
 		ui->errorLabel->setText("注册中...");
-		ui->idInput->setReadOnly(true);
-		ui->passwardInput->setReadOnly(true);
-		emit signupRequest(nickname, passward);
+		emit signupRequest(id, password);
 	}
+	ui->idInput->setReadOnly(true);
+	ui->passwordInput->setReadOnly(true);
+	ui->submitButton->setEnabled(false);
+	ui->shiftButton->setEnabled(false);
 }
 
-void StartWindow::showError(const QString &error) {
+void StartWindow::showError(const QString &error) 
+{
 	ui->errorLabel->setText(error);
 	errorShowTimer->start();
 }
-

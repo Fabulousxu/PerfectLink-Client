@@ -89,10 +89,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="createroomwindow.cpp" />
+    <ClCompile Include="endwindow.cpp" />
     <ClCompile Include="homewindow.cpp" />
+    <ClCompile Include="roominfomationwindow.cpp" />
     <ClCompile Include="socket.cpp" />
     <ClCompile Include="startwindow.cpp" />
     <QtRcc Include="mainwindow.qrc" />
+    <QtUic Include="createroomwindow.ui" />
+    <QtUic Include="endwindow.ui" />
     <QtUic Include="gamewindow.ui" />
     <QtUic Include="homewindow.ui" />
     <QtUic Include="mainwindow.ui" />
@@ -102,6 +107,7 @@
     <ClCompile Include="mainwindow.cpp" />
     <ClCompile Include="main.cpp" />
     <None Include="PerfectLinkClient.ico" />
+    <QtUic Include="roominfomationwindow.ui" />
     <QtUic Include="startwindow.ui" />
     <ResourceCompile Include="PerfectLinkClient.rc" />
   </ItemGroup>
@@ -118,6 +124,15 @@
   </ItemGroup>
   <ItemGroup>
     <Font Include="MinecraftAE.ttf" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="createroomwindow.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="roominfomationwindow.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="endwindow.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

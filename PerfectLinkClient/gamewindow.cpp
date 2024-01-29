@@ -11,12 +11,5 @@ GameWindow::GameWindow(QWidget *parent)
 	setAttribute(Qt::WA_StyledBackground);
 
 	gameCanvas = new GameCanvas(6, 6, this);
-	gameCanvas->show();
 
-
-}
-
-GameWindow::~GameWindow()
-{
-	delete ui;
 }

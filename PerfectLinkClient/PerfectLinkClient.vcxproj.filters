@@ -61,6 +61,15 @@
     <ClCompile Include="socket.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="createroomwindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="roominfomationwindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="endwindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="gamewindow.h">
@@ -78,6 +87,15 @@
     <QtMoc Include="socket.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="createroomwindow.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="roominfomationwindow.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="endwindow.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="gamewindow.ui">
@@ -87,6 +105,15 @@
       <Filter>Form Files</Filter>
     </QtUic>
     <QtUic Include="homewindow.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="createroomwindow.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="roominfomationwindow.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="endwindow.ui">
       <Filter>Form Files</Filter>
     </QtUic>
   </ItemGroup>
