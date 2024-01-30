@@ -1,241 +1,271 @@
 # Perfect Link Project
 >## 信息协议
 ### 消息格式
-1. 客户端向服务器：
+1. 客户端向服务器
 ``` Json
 {
-    "request":0,//Number，请求的类别
-    "data":{
-        //...
-    }
-} 
-```
-2. 服务器向客户端：
-``` Json 
-{
-    "reply": 0, //Number，与回复的request一致
-    "data":{
+    "request": 0, //请求类别
+    "data": {
         //...
     }
 }
 ```
-### 注册流程, request=0, reply=0
-- 客户端向服务端发送
+2. 服务器向客户端
+``` Json 
+{
+    "reply": 0, //回复类别
+    "data": {
+        //...
+    }
+}
+```
+### 注册流程, request = 0, reply = 0
+- 客户端向服务端
 ``` Json
-    "data":{
-        "nickname":"昵称",//以后拿ID登录
-        "password":"密码"
-        //只能数字英文以及部分标点，建议正则
+    "data": {
+        "nickname": "昵称",
+        "password": "密码"
     }
 ```
-- 服务端接收信息，回复：
-1. 注册成功 
+- 服务端向客户端
+1. 注册成功
 ``` Json
-    "data":{
-        "state":true,
-        "id":"id_string"//服务器分配    
+    "data": {
+        "state": true,
+        "id": "id" //long long to String, 服务器分配账户id    
     }
 ```
 2. 注册失败
 ``` Json
-    "data":{
-        "state":false,
-        "error":"失败原因"
+    "data": {
+        "state": false,
+        "error": "失败原因"
     }
 ```
-### 注销流程 request=1, reply=1
-- 客户端向服务端发送
+### 登录流程 request = 1, reply = 1
+- 客户端向服务端
 ``` Json
-    "data":{ //只有登录之后才能注销
-        "id":"id_string"
+    "data": {
+        "id": "id",
+        "password": "密码"
     }
 ```
-- 服务器向客户端回复
-1. 注销成功
+- 服务端向客户端
+1. 登录成功
 ``` Json
-    "data":{
-        "state":true
-    }
-```
-2. 注销失败
-``` Json
-    "data":{
-        "state":false,
-        "error":"失败原因"
-    }
-```
-### 登录流程 request=2, reply=2
-- 客户端向服务端发送
-``` Json
-    "data":{
-        "id":"id_string",//拿ID登录
-        "password":"密码"
-    }
-```
-- 服务端接收信息，回复
-1. 登录成功 
-``` Json
-    "data":{
-        "state":true,
-        "nickname":"昵称"//, ...
+    "data": {
+        "state": true,
+        "nickname": "昵称"
     }
 ```
 2. 登录失败
 ``` Json
     "data":{
-        "state":false,
-        "error":"失败原因"
+        "state": false,
+        "error": "失败原因"
     }
 ```
-### 房间流程
-#### 创建房间 request=3, reply=3
-- 客户端向服务端发送 data:{}
-- 服务器回复
+### 登出流程 request = 2, reply = 2
+- 客户端向服务端
 ``` Json
-    "data":{
-        "roomId":"id_string",
+    "data": {
     }
 ```
-#### 申请房间列表 request=4, reply=4
-- 客户端向服务器发送: data:{}
-- 服务器回复：(4人以下的房间才被算在内)
+- 服务器向客户端
+1. 注销成功
 ``` Json
-    "data":{
-        "roomsInfo":[
+    "data": {
+        "state": true
+    }
+```
+2. 注销失败
+``` Json
+    "data": {
+        "state": false,
+        "error": "失败原因"
+    }
+```
+### 创建房间 request = 3, reply = 3
+- 客户端向服务端
+``` Json
+    "data": {
+        "playerNumber": 2, //3, 4
+        "height": 6, //from 1 to 20
+        "width": 6, //from 1 to 20
+        "patternNumber": 8, //from 1 to 32
+        "time": 90 //from 10 to 9999
+    }
+```
+- 服务器向客户端
+``` Json
+    "data": {
+        "roomId": "rid" //long long to String
+    }
+```
+### 申请房间列表 request = 4, reply = 4
+- 客户端向服务器
+``` Json
+    "data": {
+        "playerNumber": 2 //3, 4
+    }
+```
+- 服务器向客户端
+``` Json
+    "data": {
+        "roomsInfomation": [
             {
-                "roomId":"id_string",
-                "hostNickname":"房主昵称",
-                "playerCount":1,//2,3
-            },
+                "roomId": "rid",
+                "playerNumber": 1 //2, 3 当前房间人数
+            }
             //...
-        ]
+        ] //至多五组, 不发送房间人数满了的房间
     }
 ```
-#### 加入房间 request=5, reply=5
-- 客户端向服务器发送: 
+### 加入房间 request = 5, reply = 5
+- 客户端向服务器
 ``` Json
-    "data":{
-        "roomId":"id_string"
+    "data": {
+        "roomId": "rid"
     }
 ```
-- 服务器向客户端发送
+- 服务器向客户端
+1. 加入成功
 ``` Json
-    "data":{
-        "state":true,//false，如果已经满员就不会加入成功
+    "data": {
+        "state": true,
+        "playerInfomation": [
+            {
+                "id": "id",
+                "nickname": "nickname"
+            }
+            //...
+        ] //playerInfomation是房间其他人的信息
     }
 ```
-#### 退出房间 request=6, reply=6
-- 客户端向服务器发送 data:{}
-- 服务器给回复：
+2. 加入失败
 ``` Json
-    "data":{
-        "state":true,//false，如果已经开始就不会退出成功
+    "data": {
+        "state": false,
+        "error": "失败原因" //成员已满或者房间已销毁等等
     }
 ```
-#### 房间游戏开始 request=7, reply=7
-- 客户端(限房主)向服务器发送 data:{}
-- 服务器回复（给玩家们同时）
+### 退出房间 request = 6, reply = 6
+- 客户端向服务器
 ``` Json
-    "data":{
-        "state":true,
-        "map":[
-            [0,1,2,],
+    "data": {
+        "roomId": "rid"
+    }
+```
+- 服务器向客户端
+1. 退出成功
+``` Json
+    "data": {
+        "state": true, 
+    }
+```
+2. 退出失败
+``` Json
+    "data": {
+        "state": false,
+        "error": "失败原因" //游戏已开始等等
+    }
+```
+### 玩家准备 request = 7, reply = 7
+- 客户端向服务器
+``` Json
+    "data": {
+    }
+```
+- 服务器向客户端群发
+``` Json
+    "data": {
+        "playerId": "id"
+    }
+```
+### 房间人数变动 reply = 8
+- 客户端向房间里其他人群发
+1. 有人进入房间
+``` Json
+    "data": {
+        "state": true,
+        "playerId": "id",
+        "nickname": "昵称"
+    }
+```
+2. 有人离开房间
+``` Json
+    "data": {
+        "state": true,
+        "playerId": "id",
+    }
+```
+### 游戏开始 reply = 9
+- 服务器向客户端群发
+``` Json
+    "data": {
+        "map": [
+            [0, 1, 2, ]
+            //...
             //先x后y的方块
-        ],
-        "players":[
-            {
-                "id":"id_string",
-                "nickname":"昵称"
-            },
-        ]
-    }
-```
-或者不成功
-``` Json
-    "data":{
-        "state":false,
-        "error":"不是房主/人数不够"
-    }
-```
-#### 房间信息更新（未开始并且人数有变动时）reply=8
-服务器回复
-``` Json
-    "data":{
-        "players":[
-            {
-                "id":"id_string",
-                "nickname":"昵称"
-            },
         ]
     }
 ```
 ### 游戏过程
-#### 移动 request=8, reply=9
-- 客户端向服务器发送
+#### 移动 request = 8, reply = 10
+- 客户端向服务器
 ``` Json
     "data":{
-        "direction":0//,1,2,3
+        "direction": 0//,1,2,3
     }
 ```
-- 服务端群发: 
+- 服务端向客户端群发 
 ``` Json
-    "data":{
-        "playerId":"id_string",
-        "direction":0,//1,2,3
-        "state":true//成功，false没动
+    "data": {
+        "playerId": "id",
+        "direction": 0,//1,2,3
+        "state": true //移动后是否改变位置
     }
 ```
-#### 方块变动 reply=10
-- 服务器发送
+#### 选中方块 reply = 11
+- 服务器向客户端群发
 ``` Json
-    "data":{
-        "x":0,
-        "y":0,
-        "state":0//,1,2,3
+    "data": {
+        "x": 0,
+        "y": 0,
+        "playerId": "id" //方块选中者
     }
 ```
-#### 道具变动 reply=11
-- 服务器发送
+#### 绘制路径 reply = 12
 ``` Json
-    "data":{
-        "x":0,
-        "y":0,
-        "type":0,//1,2,3
-        "state":0//,1,2,3
-    }
-```
-#### 道具效果 reply=12
-- 服务器群发/发送
-``` Json
-    "data":{
-        "type":0,//1,2,3
-        //TODO
-    }
-```
-#### 分数变动 reply=13
-- 服务器群发
-``` Json
-    "data":{
-        "scores":[
+    "data": {
+        "path": [
             {
-                "playerId":"id_string",
-                "score":100
-            },
-            //...
-        ]
+                "x": 0,
+                "y": 0
+            }
+            //路径上的点
+        ],
+        "playerId": "id" //方块消除者
     }
 ```
-#### 游戏结束 reply=14
-- 服务器群发 data:{}
-### 未知错误 reply=-1
-由服务器向客户端发送未知错误，如未识别的request代号等。
+#### 分数变动 reply = 13
+- 服务器向客户端群发
+``` Json
+    "data": {
+        "playerId": "id",
+        "score": 100
+    }
+```
+#### 游戏结束 reply = 14
+- 服务器向客户端群发 
+``` Json
+    "data": {
+    }
+```
+### 未知错误 reply = -1
+由服务器向客户端发送未知错误
 ``` Json
     "data":{
-        "error":"错误描述"
+        "error": "错误描述"
     }
 ```
->## 服务器代码架构
-### 可视化
-### 通信处理
-### 游戏处理
->## 客户端代码架构

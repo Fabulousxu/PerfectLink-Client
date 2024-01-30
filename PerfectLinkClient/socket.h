@@ -6,7 +6,7 @@
 #include <qjsondocument.h>
 #include <qjsonvalue.h>
 
-#define SERVER_IP "255.255.255.0"
+#define SERVER_IP "127.0.0.1"
 #define SERVER_PORT 8000
 
 namespace Reply {

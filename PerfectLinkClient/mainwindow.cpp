@@ -30,7 +30,8 @@ MainWindow::MainWindow(QWidget *parent)
 
 
     socket->connectToHost(SERVER_IP, SERVER_PORT);
-    startWindow->show();
+    //startWindow->show();
+    homeWindow->show();
 
 }
 

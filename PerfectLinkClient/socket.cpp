@@ -1,6 +1,7 @@
 ﻿#include "socket.h"
 
 Socket::Socket(QObject *parent)
+	: QTcpSocket(parent)
 {
 	connect(this, &QTcpSocket::readyRead, this, &Socket::onRead);
 }
@@ -12,9 +13,6 @@ void Socket::onSignupRequest(const QString &nickname, const QString &password) {
 	json.insert("request", Request::Signup);
 	json.insert("data", data);
 	write(QJsonDocument(json).toJson());
-
-	/* 下一行测试用 */
-	emit signupSuccess(1324);
 }
 
 void Socket::onLoginRequest(quint64 id, const QString &password) {
@@ -24,9 +22,6 @@ void Socket::onLoginRequest(quint64 id, const QString &password) {
 	json.insert("request", Request::Login);
 	json.insert("data", data);
 	write(QJsonDocument(json).toJson());
-
-	/* 下一行测试用 */
-	emit loginSuccess("东川路徐先生");
 }
 
 void Socket::onLogoffRequest(quint64 id) {
@@ -35,9 +30,6 @@ void Socket::onLogoffRequest(quint64 id) {
 	json.insert("request", Request::Logoff);
 	json.insert("data", data);
 	write(QJsonDocument(json).toJson());
-
-	/* 下一行测试用 */
-	emit logoffSuccess();
 }
 
 void Socket::onRead() {

@@ -85,8 +85,8 @@
 	background-color: rgb(238, 235, 198);
 }
 QWidget#widget {
-	border: 5px solid rgb(102, 0, 153);
-	border-radius: 10px;
+	border: 5px solid rgb(185, 153, 255);
+	border-radius: 15px;
 }</string>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -118,6 +118,31 @@ QWidget#widget {
           </property>
           <property name="text">
            <string>创建房间</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="errorLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="font">
+           <font>
+            <family>Minecraft AE</family>
+            <pointsize>15</pointsize>
+           </font>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">color: rgb(181, 98, 99);</string>
+          </property>
+          <property name="text">
+           <string/>
           </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>
@@ -205,24 +230,24 @@ QWidget#widget {
                    </property>
                    <property name="minimumSize">
                     <size>
-                     <width>175</width>
+                     <width>150</width>
                      <height>0</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>175</width>
+                     <width>150</width>
                      <height>16777215</height>
                     </size>
                    </property>
                    <property name="font">
                     <font>
                      <family>Minecraft AE</family>
-                     <pointsize>20</pointsize>
+                     <pointsize>15</pointsize>
                     </font>
                    </property>
                    <property name="styleSheet">
-                    <string notr="true"/>
+                    <string notr="true">color: rgb(143, 95, 0);</string>
                    </property>
                    <property name="text">
                     <string>纵向图案数量:</string>
@@ -233,7 +258,7 @@ QWidget#widget {
                   </widget>
                  </item>
                  <item>
-                  <widget class="QLineEdit" name="widthInput">
+                  <widget class="QLineEdit" name="heightInput">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                      <horstretch>0</horstretch>
@@ -242,19 +267,19 @@ QWidget#widget {
                    </property>
                    <property name="minimumSize">
                     <size>
-                     <width>100</width>
+                     <width>75</width>
                      <height>0</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>100</width>
+                     <width>75</width>
                      <height>16777215</height>
                     </size>
                    </property>
                    <property name="font">
                     <font>
-                     <pointsize>20</pointsize>
+                     <pointsize>15</pointsize>
                     </font>
                    </property>
                    <property name="styleSheet">
@@ -269,7 +294,7 @@ QLineEdit:hover {
 }</string>
                    </property>
                    <property name="text">
-                    <string>8</string>
+                    <string>6</string>
                    </property>
                    <property name="alignment">
                     <set>Qt::AlignCenter</set>
@@ -293,24 +318,24 @@ QLineEdit:hover {
                    </property>
                    <property name="minimumSize">
                     <size>
-                     <width>175</width>
+                     <width>150</width>
                      <height>0</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>175</width>
+                     <width>150</width>
                      <height>16777215</height>
                     </size>
                    </property>
                    <property name="font">
                     <font>
                      <family>Minecraft AE</family>
-                     <pointsize>20</pointsize>
+                     <pointsize>15</pointsize>
                     </font>
                    </property>
                    <property name="styleSheet">
-                    <string notr="true"/>
+                    <string notr="true">color: rgb(143, 95, 0);</string>
                    </property>
                    <property name="text">
                     <string>横向图案数量:</string>
@@ -321,7 +346,7 @@ QLineEdit:hover {
                   </widget>
                  </item>
                  <item>
-                  <widget class="QLineEdit" name="heightInput">
+                  <widget class="QLineEdit" name="widthInput">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                      <horstretch>0</horstretch>
@@ -330,19 +355,19 @@ QLineEdit:hover {
                    </property>
                    <property name="minimumSize">
                     <size>
-                     <width>100</width>
+                     <width>75</width>
                      <height>0</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>100</width>
+                     <width>75</width>
                      <height>16777215</height>
                     </size>
                    </property>
                    <property name="font">
                     <font>
-                     <pointsize>20</pointsize>
+                     <pointsize>15</pointsize>
                     </font>
                    </property>
                    <property name="styleSheet">
@@ -357,7 +382,7 @@ QLineEdit:hover {
 }</string>
                    </property>
                    <property name="text">
-                    <string>8</string>
+                    <string>6</string>
                    </property>
                    <property name="alignment">
                     <set>Qt::AlignCenter</set>
@@ -381,24 +406,24 @@ QLineEdit:hover {
                    </property>
                    <property name="minimumSize">
                     <size>
-                     <width>175</width>
+                     <width>150</width>
                      <height>0</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>175</width>
+                     <width>150</width>
                      <height>16777215</height>
                     </size>
                    </property>
                    <property name="font">
                     <font>
                      <family>Minecraft AE</family>
-                     <pointsize>20</pointsize>
+                     <pointsize>15</pointsize>
                     </font>
                    </property>
                    <property name="styleSheet">
-                    <string notr="true"/>
+                    <string notr="true">color: rgb(143, 95, 0);</string>
                    </property>
                    <property name="text">
                     <string>图案种类数量:</string>
@@ -418,19 +443,19 @@ QLineEdit:hover {
                    </property>
                    <property name="minimumSize">
                     <size>
-                     <width>100</width>
+                     <width>75</width>
                      <height>0</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>100</width>
+                     <width>75</width>
                      <height>16777215</height>
                     </size>
                    </property>
                    <property name="font">
                     <font>
-                     <pointsize>20</pointsize>
+                     <pointsize>15</pointsize>
                     </font>
                    </property>
                    <property name="styleSheet">
@@ -469,24 +494,24 @@ QLineEdit:hover {
                    </property>
                    <property name="minimumSize">
                     <size>
-                     <width>175</width>
+                     <width>150</width>
                      <height>0</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>175</width>
+                     <width>150</width>
                      <height>16777215</height>
                     </size>
                    </property>
                    <property name="font">
                     <font>
                      <family>Minecraft AE</family>
-                     <pointsize>20</pointsize>
+                     <pointsize>15</pointsize>
                     </font>
                    </property>
                    <property name="styleSheet">
-                    <string notr="true"/>
+                    <string notr="true">color: rgb(143, 95, 0);</string>
                    </property>
                    <property name="text">
                     <string>游戏时间:</string>
@@ -506,19 +531,19 @@ QLineEdit:hover {
                    </property>
                    <property name="minimumSize">
                     <size>
-                     <width>100</width>
+                     <width>75</width>
                      <height>0</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>100</width>
+                     <width>75</width>
                      <height>16777215</height>
                     </size>
                    </property>
                    <property name="font">
                     <font>
-                     <pointsize>20</pointsize>
+                     <pointsize>15</pointsize>
                     </font>
                    </property>
                    <property name="styleSheet">
@@ -533,7 +558,7 @@ QLineEdit:hover {
 }</string>
                    </property>
                    <property name="text">
-                    <string>1000</string>
+                    <string>90</string>
                    </property>
                    <property name="alignment">
                     <set>Qt::AlignCenter</set>
@@ -574,7 +599,7 @@ QLineEdit:hover {
            </spacer>
           </item>
           <item>
-           <layout class="QVBoxLayout" name="verticalLayout_3">
+           <layout class="QVBoxLayout" name="verticalLayout_3" stretch="2,0,1,0,2">
             <item>
              <spacer name="verticalSpacer_3">
               <property name="orientation">
@@ -598,11 +623,11 @@ QLineEdit:hover {
                 <property name="font">
                  <font>
                   <family>Minecraft AE</family>
-                  <pointsize>20</pointsize>
+                  <pointsize>15</pointsize>
                  </font>
                 </property>
                 <property name="styleSheet">
-                 <string notr="true"/>
+                 <string notr="true">color: rgb(107, 71, 107);</string>
                 </property>
                 <property name="text">
                  <string>模式:</string>
@@ -614,10 +639,22 @@ QLineEdit:hover {
               </item>
               <item>
                <widget class="QPushButton" name="modeButton">
+                <property name="minimumSize">
+                 <size>
+                  <width>104</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>104</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
                 <property name="font">
                  <font>
                   <family>Minecraft AE</family>
-                  <pointsize>20</pointsize>
+                  <pointsize>15</pointsize>
                  </font>
                 </property>
                 <property name="styleSheet">
@@ -664,11 +701,11 @@ QPushButton:pressed {
                 <property name="font">
                  <font>
                   <family>Minecraft AE</family>
-                  <pointsize>20</pointsize>
+                  <pointsize>15</pointsize>
                  </font>
                 </property>
                 <property name="styleSheet">
-                 <string notr="true"/>
+                 <string notr="true">color: rgb(107, 71, 107);</string>
                 </property>
                 <property name="text">
                  <string>预设:</string>
@@ -680,10 +717,28 @@ QPushButton:pressed {
               </item>
               <item>
                <widget class="QPushButton" name="levelButton">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>104</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>104</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
                 <property name="font">
                  <font>
                   <family>Minecraft AE</family>
-                  <pointsize>20</pointsize>
+                  <pointsize>15</pointsize>
                  </font>
                 </property>
                 <property name="styleSheet">
@@ -738,7 +793,7 @@ QPushButton:pressed {
          </layout>
         </item>
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_9">
+         <layout class="QHBoxLayout" name="horizontalLayout_9" stretch="1,0,1,0,1">
           <item>
            <spacer name="horizontalSpacer_8">
             <property name="orientation">
@@ -757,7 +812,7 @@ QPushButton:pressed {
             <property name="font">
              <font>
               <family>Minecraft AE</family>
-              <pointsize>30</pointsize>
+              <pointsize>25</pointsize>
              </font>
             </property>
             <property name="styleSheet">
@@ -765,8 +820,8 @@ QPushButton:pressed {
 	color: rgb(255, 255, 255);
 	background-color: rgb(117, 117, 117);
 	border: 2px solid rgb(0, 0, 0);
-	border-radius: 20px;
-	padding: 20px 40px 20px 40px;
+	border-radius: 15px;
+	padding: 15px 40px 15px 40px;
 }
 QPushButton:hover {
 	background-color: rgb(163, 163, 163);
@@ -798,7 +853,7 @@ QPushButton:pressed {
             <property name="font">
              <font>
               <family>Minecraft AE</family>
-              <pointsize>30</pointsize>
+              <pointsize>25</pointsize>
              </font>
             </property>
             <property name="styleSheet">
@@ -806,8 +861,8 @@ QPushButton:pressed {
 	color: rgb(255, 255, 255);
 	background-color: rgb(158, 168, 255);
 	border: 2px solid rgb(0, 0, 0);
-	border-radius: 20px;
-	padding: 20px 40px 20px 40px;
+	border-radius: 15px;
+	padding: 15px 40px 15px 40px;
 }
 QPushButton:hover {
 	background-color: rgb(194, 200, 255);

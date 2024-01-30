@@ -15,6 +15,9 @@ class HomeWindow : public QWidget
 	Q_OBJECT
 
 public:
+	CreateRoomWindow *createRoomWindow;
+	RoomInfomationWindow *roomInfomationWindow;
+
 	HomeWindow(QWidget *parent = nullptr);
 	~HomeWindow() { delete ui; }
 
@@ -22,18 +25,20 @@ public:
 
 private:
 	Ui::HomeWindowClass *ui;
-	CreateRoomWindow *creatRoomWindow;
-	RoomInfomationWindow *roomInfomationWindow;
+
 	int mode; /* 0为单人模式, 1为双人对战, 2为三人对战, 3为四人对战 */
 	QTimer *errorShowTimer;
 
+	void setMode(int m); /* 设置模式 */
 	void showError(const QString &error); /* 显示错误信息 */
 
 public slots:
 	void onLogoffSuccess(); /* 响应登出成功 */
 	void onLogoffFail(const QString &error) { showError(error); }; /* 响应登出失败 */
+	void onBackFromCreateRoomWindow(int mode);
 
 private slots:
+	void onLogoffButton(); /* 响应登出按钮 */
 	void onModeButton(); /* 响应模式切换按钮 */
 	void onCreatRoomButton(); /* 响应创建房间按钮 */
 	void onMatchRoomButton(); /* 响应匹配房间按钮 */
