@@ -269,3 +269,40 @@
         "error": "错误描述"
     }
 ```
+
+## 通信协议示例如下
+``` C++
+namespace Reply {
+    enum Type {
+        Signup = 0, /* 注册 */
+        Login, /* 登录 */
+        Logoff, /* 登出 */
+        CreateRoom, /* 创建房间 */
+        RequireRoom, /* 获取房间列表 */
+        EnterRoom, /* 进入房间 */
+        ExitRoom, /* 离开房间 */
+        Prepare, /* 准备开始 */
+        PlayerChange, /* 房间人数变动 */
+        Begin, /* 游戏开始 */
+        Move, /* 玩家移动 */
+        Select, /* 方块变动 */
+        Path, /* 显示匹配路径 */
+        Mark, /* 分数变动 */
+        End /* 游戏结束 */
+    };
+};
+
+namespace Request {
+    enum Type {
+        Signup = 0, /* 请求注册 */
+        Login, /* 请求登录 */
+        Logoff, /* 请求登出 */
+        CreateRoom, /* 请求创建房间 */
+        RequireRoom, /* 请求获取房间列表 */
+        EnterRoom, /* 请求进入房间 */
+        ExitRoom, /* 请求离开房间 */
+        Prepare, /* 准备开始 */
+        Move /* 玩家请求移动 */
+    };
+};
+```
