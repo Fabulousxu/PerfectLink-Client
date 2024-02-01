@@ -42,7 +42,28 @@
         "error": "失败原因"
     }
 ```
-### 登录流程 request = 1, reply = 1
+### 注销流程 request = 1, reply = 1
+- 客户端向服务端
+``` Json
+    "data": {
+        "id": "id"
+    }
+```
+- 服务器向客户端
+1. 注销成功
+``` Json
+    "data": {
+        "state": true
+    }
+```
+2. 注销失败
+``` Json
+    "data": {
+        "state": false,
+        "error": "失败原因"
+    }
+```
+### 登录流程 request = 2, reply = 2
 - 客户端向服务端
 ``` Json
     "data": {
@@ -65,32 +86,11 @@
         "error": "失败原因"
     }
 ```
-### 登出流程 request = 2, reply = 2
-- 客户端向服务端
-``` Json
-    "data": {
-        "id": "id"
-    }
-```
-- 服务器向客户端
-1. 注销成功
-``` Json
-    "data": {
-        "state": true
-    }
-```
-2. 注销失败
-``` Json
-    "data": {
-        "state": false,
-        "error": "失败原因"
-    }
-```
 ### 创建房间 request = 3, reply = 3
 - 客户端向服务端
 ``` Json
     "data": {
-        "playerNumber": 2, //3, 4
+        "playerLimit": 2, //3, 4
         "height": 6, //from 1 to 20
         "width": 6, //from 1 to 20
         "patternNumber": 8, //from 1 to 32
@@ -107,16 +107,16 @@
 - 客户端向服务器
 ``` Json
     "data": {
-        "playerNumber": 2 //3, 4
+        "playerLimit": 2 //3, 4
     }
 ```
 - 服务器向客户端
 ``` Json
     "data": {
-        "roomsInfomation": [
+        "roomInfo": [
             {
                 "roomId": "rid",
-                "playerNumber": 1 //2, 3 当前房间人数
+                "playerCount": 1 //2, 3 当前房间人数
             }
             //...
         ] //至多五组, 不发送房间人数满了的房间
@@ -134,7 +134,7 @@
 ``` Json
     "data": {
         "state": true,
-        "playerInfomation": [
+        "playerInfo": [
             {
                 "id": "id",
                 "nickname": "nickname"
@@ -153,9 +153,7 @@
 ### 退出房间 request = 6, reply = 6
 - 客户端向服务器
 ``` Json
-    "data": {
-        "roomId": "rid"
-    }
+    "data": {}
 ```
 - 服务器向客户端
 1. 退出成功
@@ -188,7 +186,7 @@
 1. 有人进入房间
 ``` Json
     "data": {
-        "state": true,
+        "enter": true,
         "playerId": "id",
         "nickname": "昵称"
     }
@@ -196,7 +194,7 @@
 2. 有人离开房间
 ``` Json
     "data": {
-        "state": true,
+        "enter": false,
         "playerId": "id",
     }
 ```
@@ -276,8 +274,8 @@
 namespace Reply {
     enum Type {
         Signup = 0, /* 注册 */
+        Logoff, /* 注销 */
         Login, /* 登录 */
-        Logoff, /* 登出 */
         CreateRoom, /* 创建房间 */
         RequireRoom, /* 获取房间列表 */
         EnterRoom, /* 进入房间 */
@@ -296,8 +294,8 @@ namespace Reply {
 namespace Request {
     enum Type {
         Signup = 0, /* 请求注册 */
+        Logoff, /* 请求注销 */
         Login, /* 请求登录 */
-        Logoff, /* 请求登出 */
         CreateRoom, /* 请求创建房间 */
         RequireRoom, /* 请求获取房间列表 */
         EnterRoom, /* 请求进入房间 */
