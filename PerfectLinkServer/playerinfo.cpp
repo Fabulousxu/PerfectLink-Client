@@ -1,9 +1,14 @@
 #include "playerinfo.h"
 #include <QRandomGenerator>
 
+QMutex id_player_mutex;
+QMap<quint64, PlayerInfo *> id_player_map;
+constexpr quint64 ID_MAX = 0x1fffffffffffff;
+constexpr char ACCOUNT_FILE_PATH[]="./data/account.json";
 
 // TODO: 现在用Map只是权宜之计，后面是要改用数据库维护的
 
+QJsonObject PlayerInfo::accountsJson={};
 PlayerInfo::PlayerInfo(const QString &nickName_, const QString &password_)
     :nickName(nickName_),password(password_){}
 quint64 PlayerInfo::add(const QString &nickName, const QString &password)
@@ -38,14 +43,12 @@ bool PlayerInfo::remove(quint64 id)
     return true;
 }
 
-void PlayerInfo::add(quint64 id, const QString &nickname, const QString &password) {
-    PlayerInfo *pInfo = new PlayerInfo(nickname, password);
-    id_player_map.insert(id, pInfo);
-}
-
-bool PlayerInfo::load() {
+bool PlayerInfo::load()
+{
+    RUN_ONLY_ONCE(true);
     QFile *file = new QFile(ACCOUNT_FILE_PATH);
-    if (!file->open(QIODevice::ReadOnly | QIODevice::Text)) { return false; }
+    if (!file->open(QIODevice::ReadOnly | QIODevice::Text))
+        return false;
     accountsJson = QJsonDocument::fromJson(file->readAll()).object();
     file->close();
     QMutexLocker locker(&id_player_mutex);
@@ -53,5 +56,9 @@ bool PlayerInfo::load() {
         auto id = it.value().toString().toULongLong();
         auto nickname = it.value().toObject().value("nickname").toString();
         auto password = it.value().toObject().value("password").toString();
+        if(id_player_map.contains(id)) continue;
+        id_player_map.insert(id,new PlayerInfo(nickname, password));
     }
+    return true;
 }
+

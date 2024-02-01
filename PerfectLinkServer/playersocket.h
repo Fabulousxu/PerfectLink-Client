@@ -6,6 +6,7 @@
 #include <QComboBox>
 #include <QTextBrowser>
 #include <QTableWidget>
+#include "game.h"
 class Room;
 namespace Reply{
 enum EType
@@ -18,12 +19,12 @@ enum EType
     REQUIRE_ROOMS,//申请房间列表信息
     ENTER_ROOM,//加入房间
     EXIT_ROOM,//退出房间
-    BEGIN_GAME,//房间游戏开始
+    PREPARE,//玩家准备
     PLAYER_CHANGE,//房间人数变动
+    BEGIN_GAME,//房间游戏开始
     MOVE,//移动
-    BLOCK_CHANGE,//方块移动
-    TOOL_CHANGE,//道具变动
-    TOOL_EFFECT,//道具效果
+    SELECT,//方块移动
+    PATH,//显示路径
     MARK, //分数变动
     END_GAME //游戏结束
 };
@@ -35,6 +36,7 @@ ErrDef(ROOM_ERROR, "Room doesn\'t exist");
 ErrDef(ROOM_FULL, "Too many players in room");
 ErrDef(ROOM_START, "No entering because the game has begun");
 ErrDef(NOT_HOST, "You're not the host");
+ErrDef(SYNC_ERROR, "Bad network");
 #undef ErrDef
 }
 namespace Request{
@@ -47,36 +49,42 @@ enum EType
     REQUIRE_ROOMS,
     ENTER_ROOM,
     EXIT_ROOM,
-    BEGIN_GAME,
+    PREPARE,
     MOVE
 };
 }
-class PlayerSocket : public QTcpSocket
+class PlayerSocket : public QObject
 {
     Q_OBJECT
+public:
+    static QTableWidget *userTable; //控件
+    static QTextBrowser *stateDisplay; //控件
 private:
-    QTableWidget *userTable; //控件
-    QTextBrowser *stateDisplay; //控件
+    QTcpSocket *socket;
     quint64 id; //玩家id，0是未分配、未登录
     Room *gamingRoom; //游戏房间
     enum EState{
         OFFLINE,//未登录，注册全程应为此状态，登录前为此状态
         ONLINE,//登录但未游戏
-        IN_ROOM,//在房间里但没开始游戏
+        IN_ROOM,//在房间里但没准备
+        PREPARE,//在房间里并且准备好了
         GAMING //正在游戏中
-    } state; //OFFLINE->ONLINE->  IN_ROOM->GAMING->ONLINE->  ...->OFFLINE
+    } state; //OFFLINE->ONLINE->  IN_ROOM->PREPARE->GAMING->ONLINE->  ...->OFFLINE
 public:
     /**
      * @brief PlayerSocket构造函数
+     * @param socket_ QTcpSocket指针
      * @param parent 父对象
      */
-    explicit PlayerSocket(QObject *parent=nullptr);
+    explicit PlayerSocket(QTcpSocket *socket_, QWidget *parent=nullptr);
+
+    ~PlayerSocket();
     /**
-     * @brief 初始化，传入控件指针是为了方便随时加信息
+     * @brief 设置控件
      * @param userTable_ 控件
      * @param stateDisplay_ 控件
      */
-    void init(QTableWidget *userTable_, QTextBrowser *stateDisplay_);
+    static void setWidget(QTableWidget *userTable_, QTextBrowser *stateDisplay_);
     /**
      * @brief 回复给客户一条消息
      * @param replyCode 回复消息的类别代号
@@ -99,13 +107,18 @@ public:
      * @return id数字
      */
     quint64 getId() const {return id;} //登录之后就应该是非0的id
+    /**
+     * @brief 玩家是否准备中
+     * @return 是则true
+     */
+    bool isPrepare() const {return state==PREPARE;}
 private:
     /**
      * @brief 注册消息响应
      * @param nickname 玩家昵称
      * @param password 玩家密码
      */
-    void onRegister(QString nickname, QString password);
+    void onRegister(const QString &nickname, const QString &password);
     /**
      * @brief 注销消息响应
      * @param id 注销id
@@ -116,15 +129,21 @@ private:
      * @param id 登录玩家id
      * @param password 登录输入密码
      */
-    void onLogIn(quint64 id, QString password);
+    void onLogIn(quint64 id, const QString &password);
     /**
      * @brief 创建房间响应
+     * @param playerLimit 玩家数上限
+     * @param height 地图高度
+     * @param width 地图宽度
+     * @param patternNumber 图案样数
+     * @param time 游戏时长
      */
-    void onCreateRoom();
+    void onCreateRoom(int playerLimit, int height, int width, int patternNumber, int time);
     /**
      * @brief 索取房间信息响应
+     * @param playerLimit 房间游戏人数上限
      */
-    void onRequireRooms();
+    void onRequireRooms(int playerLimit);
     /**
      * @brief 进入房间响应
      * @param roomId 房间id
@@ -135,9 +154,9 @@ private:
      */
     void onExitRoom();
     /**
-     * @brief 房主开启游戏响应
+     * @brief 玩家准备响应
      */
-    void onBeginGame();
+    void onPrepare();
     /**
      * @brief 玩家移动响应
      * @param direction 移动方向
@@ -151,6 +170,10 @@ private:
 private slots:
     void onRead(); //读信息
     void onDisconnect(); //链接断开
+public slots:
+    void onGameBegin(const QJsonArray &initMap);
+signals:
+    void move(quint64 id, Direction direction);
 };
 
 #endif // PLAYERSOCKET_H

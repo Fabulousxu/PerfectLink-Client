@@ -1,7 +1,7 @@
 #ifndef ROOM_H
 #define ROOM_H
+#pragma once
 #include "playersocket.h"
-#include "game.h"
 class Room : public QObject
 {
     Q_OBJECT
@@ -9,14 +9,28 @@ public:
     /**
      * @brief 构建一个新房间的静态函数
      * @param host 房主Socket
+     * @param playerLimit 玩家人数上限
+     * @param height 地图高度
+     * @param width 地图宽度
+     * @param patternNumber 匹配图案数
+     * @param time 游戏时长
      * @return 构建的新房间
      */
-    static Room* add(PlayerSocket *host);
+    static Room* add(
+        PlayerSocket *host,
+        int playerLimit,
+        int height,
+        int width,
+        int patternNumber,
+        int time
+    );
     /**
      * @brief 移除一个房间的静态函数
      * @param id 移除房间的id值
      */
     static bool remove(quint64 id);
+
+    static QList<Room*> getSomeRooms(int playerLimit, int count=5);
 
     /**
      * @brief 向房间内添加玩家
@@ -29,37 +43,66 @@ public:
      */
     void removePlayer(PlayerSocket *player);
     /**
-     * @brief 开启房间游戏
+     * @brief 玩家准备状态改变
+     * @param player 玩家
+     * @param prepare 准备状态
      */
-    void beginGame();
+    void changePrepare(PlayerSocket *player, bool prepare);
     /**
      * @brief 获取房间Id字符串
      * @return 字符串，表示id
      */
     QString getIdString() const {return QString::number(id);}
     /**
-     * @brief 获取房间信息
-     * @return 一个JSON
-     * {"roomId":"id", players:[{"id":"id", "nickname":"name"}, ...]}
-     * 第一个是房主信息
-     */
-    QJsonObject getRoomInfo() const;
-    /**
-     * @brief 获取房主id
-     * @return 房主id，数字
-     */
-    quint64 getHostId() const {return players[0]->getId();}
-    /**
      * @brief 获取房间内玩家个数
      * @return 玩家个数，int
      */
-    int getPlayerCount() const {return players.size();}
+    int getPlayerCount() const {return player_state_map.size();}
+    /**
+     * @brief 获取房间玩家信息
+     * @return Json数组
+     */
+    QJsonArray getPlayerInfo() const;
 private:
-    explicit Room(PlayerSocket *host, uint64_t id_, QObject *parent = nullptr);//不许自己创Room
-    Game *game;
-    QList<PlayerSocket*> players; //[0]房主
-    quint64 id; //0是未分配
+    /**
+     * @brief 构造函数
+     * @param host 创建房间的玩家
+     * @param id_ 分配的房间ID
+     * @param playerLimit_ 玩家人数上限
+     * @param height 地图高度
+     * @param width 地图宽度
+     * @param patternNumber 匹配图案数
+     * @param time 游戏时长
+     * @param parent 父对象
+     * @attention 不许外面调用构造函数，统一由静态方法分配
+     */
+    explicit Room(
+        PlayerSocket *host,
+        uint64_t id_,
+        int playerLimit_,
+        int height,
+        int width,
+        int patternNumber,
+        int time,
+        QObject *parent = nullptr
+    );
 
+    QMap<PlayerSocket*, bool> player_state_map; //[0]房主
+    quint64 id; //0是未分配
+    Game *game;
+    int playerLimit;
+
+    /**
+     * @brief 给房内玩家群发
+     * @param replyCode 回复代号
+     * @param data JSON里的data字段
+     */
+    void broadcast(Reply::EType replyCode, const QJsonObject &data) const;
+signals:
+    void gameBegin(const QJsonArray &initMap); //发送给socket的，在游戏开始时
+    void tryInitGame();
+private slots:
+    void onTryInitGame();
 };
 
 #endif // ROOM_H

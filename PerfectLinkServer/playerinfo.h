@@ -9,12 +9,19 @@
 #include <qfile.h>
 #include <qtextstream.h>
 
+#define RUN_ONLY_ONCE(refuseRetVal) \
+static bool run_only_once_helper=false;\
+if(run_only_once_helper)\
+return refuseRetVal;\
+run_only_once_helper=true;
+
 class PlayerInfo
 {
     const QString nickName;
     const QString password;
 private:
     PlayerInfo(const QString &nickName_, const QString &password_); //外界不许直接构造
+    static QJsonObject accountsJson;
 public:
     /**
      * @brief 添加玩家信息的静态方法
@@ -28,6 +35,12 @@ public:
      * @param id 移除的玩家id
      */
     static bool remove(quint64 id);
+    /**
+     * @brief 用于服务器开始运行时从json文件载入账户数据
+     * @return 载入是否成功
+     */
+    static bool load();
+
     /**
      * @brief 获取玩家昵称
      * @return 昵称(字符串)
@@ -44,24 +57,8 @@ public:
      * @return 一样为true
      */
     bool isPasswordMatched(const QString &password_) const {return password_==password;}
-
-    /// <summary>
-    /// 向内存账户表中添加一个账户
-    /// </summary>
-    static void add(quint64 id, const QString &nickname, const QString &password);
-
-    /// <summary>
-    /// 用于服务器开始运行时从json文件载入账户数据
-    /// </summary>
-    /// <returns>载入是否成功</returns>
-    static bool load();
 };
 
-QMutex id_player_mutex;
-QMap<quint64, PlayerInfo *> id_player_map;
-QJsonObject accountsJson;
-constexpr quint64 ID_MAX = 0x1fffffffffffff;
-#define ACCOUNT_FILE_PATH "./data/account.json"
 
 #if 0 
 ./data/account.json格式示例:

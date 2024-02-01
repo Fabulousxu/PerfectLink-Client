@@ -6,25 +6,28 @@
 #include <QRandomGenerator>
 
 extern QMap<quint64, PlayerInfo*> id_player_map;
-PlayerSocket::PlayerSocket(QObject *parent)
-    :QTcpSocket(parent)
-    ,userTable(nullptr)
-    ,stateDisplay(nullptr)
+extern QMap<quint64, Room*> id_room_map;
+
+QTableWidget *PlayerSocket::userTable=nullptr;
+QTextBrowser *PlayerSocket::stateDisplay=nullptr;
+
+PlayerSocket::PlayerSocket(QTcpSocket *socket_,QWidget *parent)
+    :QObject(parent)
+    ,socket(socket_)
     ,id(0)
     ,gamingRoom(nullptr)
     ,state(OFFLINE)
-{}
-void PlayerSocket::init(QTableWidget *userTable_, QTextBrowser *stateDisplay_)
 {
-    userTable=userTable_;
-    stateDisplay=stateDisplay_;
-    id=0;
-    gamingRoom=nullptr;
-    state=OFFLINE;
-    connect(this, &PlayerSocket::readyRead, this, &PlayerSocket::onRead);
-    connect(this, &PlayerSocket::disconnected, this, &PlayerSocket::onDisconnect);
+    connect(socket, &QTcpSocket::readyRead, this, &PlayerSocket::onRead);
+    connect(socket, &QTcpSocket::disconnected, this, &PlayerSocket::onDisconnect);
     //记录有用户接入
-    stateDisplay->insertHtml("User <b>"+peerAddress().toString()+"</b> In <br>");
+    stateDisplay->insertHtml("User <b>"+socket->peerAddress().toString()+"</b> In <br>");
+}
+void PlayerSocket::setWidget(QTableWidget *userTable_,QTextBrowser *stateDisplay_)
+{
+    RUN_ONLY_ONCE()
+    if(!userTable) userTable=userTable_;
+    if(!stateDisplay) stateDisplay=stateDisplay_;
 }
 QJsonObject PlayerSocket::requestInterpreter(QByteArray bytesMsg)
 {
@@ -37,7 +40,7 @@ void PlayerSocket::reply(Reply::EType replyCode, const QJsonObject &data)
         {"reply",replyCode},
         {"data",data},
     });
-    write(QJsonDocument(msg).toJson());
+    socket->write(QJsonDocument(msg).toJson());
 }
 void PlayerSocket::setPlayerState(EState state_)
 {
@@ -61,13 +64,13 @@ void PlayerSocket::setPlayerState(EState state_)
         auto info=id_player_map.value(id);
         userTable->item(rowCnt,1)->setText(info->getNickName());
         userTable->item(rowCnt,2)->setText(info->getPassword());
-        userTable->item(rowCnt,3)->setText(this->peerAddress().toString());
+        userTable->item(rowCnt,3)->setText(socket->peerAddress().toString());
     }
     state=state_;
 }
 void PlayerSocket::onRead()
 {
-    auto jsonMsg=requestInterpreter(this->readAll());
+    auto jsonMsg=requestInterpreter(socket->readAll());
     int requestCode=jsonMsg.value("request").toInt();
     QJsonObject data=jsonMsg.value("data").toObject({});
     switch(requestCode){
@@ -81,10 +84,16 @@ void PlayerSocket::onRead()
         onLogIn(data.value("id").toString().toULongLong(),data.value("password").toString());
         break;
     case Request::CREATE_ROOM :
-        onCreateRoom();
+        onCreateRoom(
+            data.value("playerLimit").toInt(),
+            data.value("height").toInt(),
+            data.value("width").toInt(),
+            data.value("patternNumber").toInt(),
+            data.value("time").toInt()
+        );
         break;
     case Request::REQUIRE_ROOMS :
-        onRequireRooms();
+        onRequireRooms(data.value("playerLimit").toInt());
         break;
     case Request::ENTER_ROOM:
         onEnterRoom(data.value("roomId").toString().toULongLong());
@@ -92,8 +101,8 @@ void PlayerSocket::onRead()
     case Request::EXIT_ROOM:
         onExitRoom();
         break;
-    case Request::BEGIN_GAME:
-        onBeginGame();
+    case Request::PREPARE:
+        onPrepare();
         break;
     case Request::MOVE:
         onMove(data.value("direction").toInt());
@@ -108,15 +117,20 @@ void PlayerSocket::onRead()
 
 void PlayerSocket::onDisconnect()//断连槽函数
 {
-
-
-
     //TODO
+
+
+
+    if(id)
+    {
+        PlayerInfo::remove(id);
+        id=0;
+    }
     disconnect(this, 0, this, 0);
     this->deleteLater();
 }
 
-void PlayerSocket::onRegister(QString nickname, QString password)
+void PlayerSocket::onRegister(const QString &nickname, const QString &password)
 {
     if(state!=OFFLINE || id) return; //有id就不能继续注册咯
     //TODO: 检查安全性？
@@ -130,24 +144,24 @@ void PlayerSocket::onRegister(QString nickname, QString password)
 void PlayerSocket::onLogOff(quint64 id)
 {
     if(state!=ONLINE) return;
-    if(!PlayerInfo::remove(id)) reply(Reply::LOGOFF, QJsonObject{
+    if(!PlayerInfo::remove(id)) reply(Reply::LOGOFF, {
         {"state",false},
-        {"error","ID doesn\'t exist"}
+        {"error",Reply::ID_ERROR}
     });
-    else reply(Reply::LOGOFF, QJsonObject{{"state",true}});
+    else reply(Reply::LOGOFF, {{"state",true}});
     this->id=0;
     setPlayerState(OFFLINE);
 }
 
-void PlayerSocket::onLogIn(quint64 id, QString password)
+void PlayerSocket::onLogIn(quint64 id, const QString &password)
 {
     if(state!=OFFLINE || this->id) return; //不要重复登录
     if(!id_player_map.contains(id))
-        reply(Reply::LOGIN, QJsonObject{{"state",false},{"error",Reply::ID_ERROR}});
+        reply(Reply::LOGIN, {{"state",false},{"error",Reply::ID_ERROR}});
     else if(!id_player_map.value(id)->isPasswordMatched(password))//密码错误
-        reply(Reply::LOGIN, QJsonObject{{"state",false},{"error",Reply::PASSWORD_ERROR}});
+        reply(Reply::LOGIN, {{"state",false},{"error",Reply::PASSWORD_ERROR}});
     else{
-        reply(Reply::LOGIN, QJsonObject{
+        reply(Reply::LOGIN, {
             {"state",true},
             {"nickname",id_player_map.value(id)->getNickName()}
         });
@@ -156,31 +170,27 @@ void PlayerSocket::onLogIn(quint64 id, QString password)
     }
 }
 
-void PlayerSocket::onCreateRoom()
+void PlayerSocket::onCreateRoom(int playerLimit, int height, int width, int patternNumber, int time)
 {
     if(state!=ONLINE) return;
-    gamingRoom=Room::add(this);
+    // TODO: 参数怎么存（是直接存一份在屋子？）
+    gamingRoom=Room::add(this,playerLimit, height, width, patternNumber, time);
     reply(Reply::CREATE_ROOM,{{"roomId", gamingRoom->getIdString()}});
     state=IN_ROOM;
 }
 
-extern QMap<quint64, Room*> id_room_map;
-void PlayerSocket::onRequireRooms()
+void PlayerSocket::onRequireRooms(int playerLimit)
 {
     if(state!=ONLINE) return;
     QJsonArray array;
-    foreach(auto pRoom, id_room_map)
-    {
-        auto r=pRoom->getRoomInfo();
-        QJsonObject roomInfo{};
-        roomInfo.insert("roomId",r.value("roomId"));
-        auto &&roomPlayers=r.value("players").toArray();
-        auto hostNickname=roomPlayers.at(0).toObject().value("nickname").toString();
-        roomInfo.insert("hostNickname",hostNickname);
-        roomInfo.insert("playerCount", roomPlayers.size());
+    auto rooms=Room::getSomeRooms(playerLimit);
+    foreach(auto pRoom, rooms){
+        QJsonObject roomInfo;
+        roomInfo.insert("roomId",pRoom->getIdString());
+        roomInfo.insert("playerCount", pRoom->getPlayerCount());
         array.append(roomInfo);
     }
-    reply(Reply::REQUIRE_ROOMS, {{"roomsInfo", array}});
+    reply(Reply::REQUIRE_ROOMS, {{"roomInfo", array}});
 }
 
 void PlayerSocket::onEnterRoom(quint64 roomId)
@@ -190,22 +200,22 @@ void PlayerSocket::onEnterRoom(quint64 roomId)
     {
         reply(Reply::ENTER_ROOM,{
             {"state",false},
-            {"error","Room doesn\'t exist"}
+            {"error",Reply::ROOM_ERROR}
         });
         return;
     }
     auto pRoom=id_room_map.value(roomId);
-    if(pRoom->getPlayerCount()>=Game::PLAYER_COUNT_MAX)//人数太多
+    if(pRoom->getPlayerCount()>=/*Game::PLAYER_COUNT_MAX*/4)//人数太多
     {
         reply(Reply::ENTER_ROOM,{
             {"state", false},
-            {"error","Too many players"}
+            {"error",Reply::ROOM_FULL}
         });
         return;
     }
     //加入成功
+    reply(Reply::ENTER_ROOM,{{"state",true},{"playerInfo",pRoom->getPlayerInfo()}});
     pRoom->addPlayer(this);
-    reply(Reply::ENTER_ROOM,{{"state",true}});
     state = IN_ROOM;
     gamingRoom=pRoom;
 }
@@ -213,26 +223,38 @@ void PlayerSocket::onEnterRoom(quint64 roomId)
 void PlayerSocket::onExitRoom() //这里是申请退出房间
 {
     if(state!=IN_ROOM || (!gamingRoom)) return;
+    //TODO 退出失败的判断
     gamingRoom->removePlayer(this);
     reply(Reply::EXIT_ROOM, {{"state",true}});
     state=ONLINE;
     gamingRoom=nullptr;
 }
 
-void PlayerSocket::onBeginGame()
+void PlayerSocket::onPrepare()
 {
-    if(state!=IN_ROOM) return;
-    else if(!gamingRoom)
-        reply(Reply::BEGIN_GAME, {{"state",false},{"error","Not in room"}});//! 不应发生
-    else if(gamingRoom->getHostId()!=id)
-        reply(Reply::BEGIN_GAME, {{"state",false},{"error",Reply::NOT_HOST}});
-    else{
-        //TODO
-        state=GAMING;
-    }
+    if(state!=IN_ROOM || (!gamingRoom)) return;
+    gamingRoom->changePrepare(this, true);
+    state=PREPARE;
 }
 
 void PlayerSocket::onMove(int direction)
 {
-    //TODO
+    if (state!=GAMING||(!gamingRoom)) return;
+    emit move(id, (Direction)direction);
+}
+
+PlayerSocket::~PlayerSocket()
+{
+    if(id) PlayerInfo::remove(id);
+    //if(gamingRoom) Room::remove(gamingRoom->getIdString().toInt());
+}
+void PlayerSocket::onGameBegin(const QJsonArray &initMap)
+{
+    if(state!=PREPARE)
+    {
+        reply(Reply::ERROR, {{"error", Reply::SYNC_ERROR}});
+        return;
+    }
+    reply(Reply::BEGIN_GAME, {{"map",initMap}});
+    state=GAMING;
 }

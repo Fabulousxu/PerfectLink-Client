@@ -24,41 +24,49 @@ inline QPoint neighbor(int x, int y, Direction d) { return d & 0x1 ? QPoint(x + 
 inline QPoint neighbor(const QPoint &p, Direction d) { return neighbor(p.x(), p.y(), d); }
 
 class Player : public QObject {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	QPoint position; /* 玩家当前坐标 */
-	int score; /* 玩家当前分数 */
-	QPoint *select; /* 玩家已选择的位置, 因为可以为空, 故采用指针 */
-	int moveCoolDown; /* 移动冷却时间(ms) */
-	QTimer *moveCoolDownTimer; /* 移动冷却 */
+    QPoint position; /* 玩家当前坐标 */
+    int score; /* 玩家当前分数 */
+    QPoint *select; /* 玩家已选择的位置, 因为可以为空, 故采用指针 */
+    int moveCoolDown; /* 移动冷却时间(ms) */
+    QTimer *moveCoolDownTimer; /* 移动冷却 */
 
-	Player(QPoint p);
-	Player(int x, int y) : Player(QPoint(x, y)) {};
+    Player(QPoint p);
+    Player(int x, int y) : Player(QPoint(x, y)) {};
 };
 
 class Game : public QObject {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-    explicit Game(QObject *parent=nullptr);
+    explicit Game(
+        int height_,
+        int width_,
+        int patternNumber_,
+        int time_,
+        QObject *parent = nullptr
+    );
 
-	int width() { return block.size(); }
-	int height() { return block.empty() ? 0 : block[0].size(); }
-	QVector<QVector<int>> getBlock() { return block; } /* 获取方块 */
-	void initializeBlock(int h, int w, QVector<int> pattern); /* 初始化地图 */
-    void move(quint64 id, Direction d); /* 人物移动 */
+    int getWidth() const { return block.size(); }
+    int getHeight() const { return block.empty() ? 0 : block[0].size(); }
+    QVector<QVector<int>> getBlock() { return block; } /* 获取方块 */
+    void initializeBlock(int h, int w, QVector<int> pattern); /* 初始化地图 */
+public slots:
+    void onMove(quint64 id, Direction d); /* 人物移动 */
 
 private:
-	QVector<QVector<int>> block; /* 游戏方块图, block[x][y]即为坐标为(x, y)的方块, 涵盖整个地图包括四周墙壁 */
+    QVector<QVector<int>> block; /* 游戏方块图, block[x][y]即为坐标为(x, y)的方块, 涵盖整个地图包括四周墙壁 */
     QMap<quint64 , Player> player; /* 用户id-玩家表 */
+    int patternNumber;
+    int time;
+    int &getBlock(const QPoint &p) { return block[p.x()][p.y()]; } /* 通过坐标获取方块引用 */
 
-	int &getBlock(const QPoint &p) { return block[p.x()][p.y()]; } /* 通过坐标获取方块引用 */
-
-	QVector<QPoint> match(const QPoint &a, const QPoint &b); /* 判断两个方块是否能匹配, 返回匹配路径(不能匹配为空) */
-	QVector<QPoint> matchLine(const QPoint &a, const QPoint &b); /* 直线匹配 */
-	QVector<QPoint> matchTurn(const QPoint &a, const QPoint &b); /* 一次转弯匹配 */
-	QVector<QPoint> matchTurn2(const QPoint &a, const QPoint &b); /* 二次转弯匹配 */
+    QVector<QPoint> match(const QPoint &a, const QPoint &b); /* 判断两个方块是否能匹配, 返回匹配路径(不能匹配为空) */
+    QVector<QPoint> matchLine(const QPoint &a, const QPoint &b); /* 直线匹配 */
+    QVector<QPoint> matchTurn(const QPoint &a, const QPoint &b); /* 一次转弯匹配 */
+    QVector<QPoint> matchTurn2(const QPoint &a, const QPoint &b); /* 二次转弯匹配 */
 
     void select(quint64 id, const QPoint &p); /* 某玩家选中某位置的方块 */
 
@@ -67,4 +75,5 @@ signals:
     void showSelectBlock(quint64 id, const QPoint &p); /* 显示指定方块被选中 */
     void showUnselectBlock(quint64 id, const QPoint &p); /* 显示指定方块取消选中 */
     void showMatchPath(quint64 id, const QVector<QPoint> &path); /* 显示匹配路径 */
+
 };

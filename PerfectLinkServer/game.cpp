@@ -9,37 +9,51 @@ Player::Player(QPoint p)
     moveCoolDownTimer->setInterval(moveCoolDown);
     moveCoolDownTimer->setSingleShot(true);
 }
-Game::Game(QObject *parent):QObject(parent){}
+Game::Game(
+    int height_,
+    int width_,
+    int patternNumber_,
+    int time_,
+    QObject *parent)
+    :QObject(parent)
+    ,patternNumber(patternNumber_)
+    ,time(time_)
+{
+    //TODO 用patternNumber_ 初始化出pattern参数
+    initializeBlock(height_, width_, );
+}
 void Game::initializeBlock(int h, int w, QVector<int> pattern) {
     int pos = 0, num = 0, total = h * w;
     block = QVector<QVector<int>>(w + SURROUNDING * 2, QVector<int>(h + SURROUNDING * 2, 0));
-    for (auto x = 0; x < width(); ++x) {
-        if (x < WALL_WIDTH || x >= width() - WALL_WIDTH) {
+    auto width=getWidth();
+    auto height=getHeight();
+    for (auto x = 0; x < width; ++x) {
+        if (x < WALL_WIDTH || x >= width - WALL_WIDTH) {
             for (auto &b : block[x]) { b = -1; }
         } else {
-            for (auto y = 0; y < WALL_WIDTH; ++y) { block[x][y] = block[x][height() - 1 - y] = -1; }
-            if (SURROUNDING <= x && x < width() - SURROUNDING) {
-                for (auto y = SURROUNDING; y < width() - SURROUNDING; ++y) {
+            for (auto y = 0; y < WALL_WIDTH; ++y) { block[x][y] = block[x][height - 1 - y] = -1; }
+            if (SURROUNDING <= x && x < width - SURROUNDING) {
+                for (auto y = SURROUNDING; y < width - SURROUNDING; ++y) {
                     if (num++ < total / 2) {
                         block[x][y] = pattern[pos++];
                         if (pos >= pattern.size()) { pos = 0; }
-                    } else { block[x][y] = block[width() - 1 - x][height() - 1 - y]; }
+                    } else { block[x][y] = block[width - 1 - x][height - 1 - y]; }
                 }
             }
         }
     }
     do {
-        for (auto x = SURROUNDING; x < width() - SURROUNDING; ++x) {
-            for (auto y = SURROUNDING; y < height() - SURROUNDING; ++y) {
-                auto a = QRandomGenerator::global()->bounded(SURROUNDING, width() - SURROUNDING);
-                auto b = QRandomGenerator::global()->bounded(SURROUNDING, height() - SURROUNDING);
+        for (auto x = SURROUNDING; x < width - SURROUNDING; ++x) {
+            for (auto y = SURROUNDING; y < height - SURROUNDING; ++y) {
+                auto a = QRandomGenerator::global()->bounded(SURROUNDING, width - SURROUNDING);
+                auto b = QRandomGenerator::global()->bounded(SURROUNDING, height - SURROUNDING);
                 qSwap(block[x][y], block[a][b]);
             }
         }
     } while (false);
 }
 
-void Game::move(quint64 id, Direction d) {
+void Game::onMove(quint64 id, Direction d) {
     Player &player = this->player[id];
     if (player.moveCoolDownTimer->isActive()) { return; }
     player.moveCoolDownTimer->start();
@@ -96,17 +110,19 @@ QVector<QPoint> Game::matchTurn(const QPoint &a, const QPoint &b) {
 
 QVector<QPoint> Game::matchTurn2(const QPoint &a, const QPoint &b) {
     QVector<QPoint> path, tmp;
-    int pos[2] = { 0 }, flag = true, length, minLength = (width() + height()) * 2;
+    auto width=getWidth();
+    auto height=getHeight();
+    int pos[2] = { 0 }, flag = true, length, minLength = (width + height) * 2;
     auto leftA = a.x() - 1, rightA = a.x() + 1, upA = a.y() - 1, downA = a.y() + 1;
     auto leftB = b.x() - 1, rightB = b.x() + 1, upB = a.y() - 1, downB = a.x() + 1;
     while (leftA >= SURROUNDING - 1 && isFloor(block[leftA][a.y()])) { --leftA; } ++leftA;
-    while (rightA <= width() - SURROUNDING && isFloor(block[rightA][a.y()])) { ++rightA; } --rightA;
+    while (rightA <= width - SURROUNDING && isFloor(block[rightA][a.y()])) { ++rightA; } --rightA;
     while (upA >= SURROUNDING - 1 && isFloor(block[a.x()][upA])) { --upA; } ++upA;
-    while (downA <= height() - SURROUNDING && isFloor(block[a.x()][downA])) { ++downA; } --downA;
+    while (downA <= height - SURROUNDING && isFloor(block[a.x()][downA])) { ++downA; } --downA;
     while (leftB >= SURROUNDING - 1 && isFloor(block[leftB][b.y()])) { --leftB; } ++leftB;
-    while (rightB <= width() - SURROUNDING && isFloor(block[rightB][b.y()])) { ++rightB; } --rightB;
+    while (rightB <= width - SURROUNDING && isFloor(block[rightB][b.y()])) { ++rightB; } --rightB;
     while (upB >= SURROUNDING - 1 && isFloor(block[b.x()][upB])) { --upB; } ++upB;
-    while (downB <= height() - SURROUNDING && isFloor(block[b.x()][downB])) { ++downB; } --downB;
+    while (downB <= height - SURROUNDING && isFloor(block[b.x()][downB])) { ++downB; } --downB;
     auto left = qMax(leftA, leftB), right = qMin(rightA, rightB), up = qMax(upA, upB), down = qMin(downA, downB);
     for (auto x = left; x <= right; ++x, flag = true) {
         if (x == a.x() || x == b.x()) { continue; }
@@ -114,7 +130,7 @@ QVector<QPoint> Game::matchTurn2(const QPoint &a, const QPoint &b) {
             for (auto y = a.y() + 1; y < b.y(); ++y) { if (!isFloor(block[x][y])) { flag = false; break; } }
         } else { for (auto y = a.y() - 1; y > b.y(); --y) { if (!isFloor(block[x][y])) { flag = false; break; } } }
         if (flag && (length = qAbs(a.x() - x) + qAbs(b.x() - x)) + qAbs(a.y() - b.y()) < minLength) {
-            pos[0] = 1; pos[1] = x; 
+            pos[0] = 1; pos[1] = x;
             minLength = length;
         }
     }
@@ -124,7 +140,7 @@ QVector<QPoint> Game::matchTurn2(const QPoint &a, const QPoint &b) {
             for (auto x = a.x() + 1; x < b.x(); ++x) { if (!isFloor(block[x][y])) { flag = false; break; } }
         } else { for (auto x = a.x() - 1; y > b.x(); --x) { if (!isFloor(block[x][y])) { flag = false; break; } } }
         if (flag && (length = qAbs(a.y() - y) + qAbs(b.y() - y)) + qAbs(a.x() - b.x()) < minLength) {
-            pos[0] = 2; pos[1] = y; 
+            pos[0] = 2; pos[1] = y;
             minLength = length;
         }
     }
