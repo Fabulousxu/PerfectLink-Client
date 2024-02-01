@@ -103,10 +103,10 @@
     <ResourceCompile Include="PerfectLinkServer.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="game.h" />
+    <QtMoc Include="game.h" />
     <ClInclude Include="playerinfo.h" />
-    <ClInclude Include="playersocket.h" />
-    <ClInclude Include="room.h" />
+    <QtMoc Include="playersocket.h" />
+    <QtMoc Include="room.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

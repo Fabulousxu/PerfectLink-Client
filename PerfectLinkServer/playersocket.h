@@ -128,7 +128,7 @@ private slots:
     void onRead(); //读信息
     void onDisconnect(); //链接断开
 public slots:
-    void onGameBegin(const QJsonArray &initMap);
+    void onGameBegin(const QJsonObject &data);
 signals:
     void move(quint64 id, Direction direction);
 };

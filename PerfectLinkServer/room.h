@@ -104,7 +104,7 @@ private:
      */
     void broadcast(Reply::EType replyCode, const QJsonObject &data) const;
 signals:
-    void gameBegin(const QJsonArray &initMap); //发送给socket的，在游戏开始时
+    void gameBegin(const QJsonObject &data); //发送给socket的，在游戏开始时
     void tryInitGame();
 private slots:
     void onTryInitGame();

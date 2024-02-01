@@ -1,4 +1,5 @@
 #include "playerinfo.h"
+#include "playersocket.h"
 #include <QRandomGenerator>
 
 QMutex id_player_mutex;
@@ -14,11 +15,14 @@ PlayerInfo::PlayerInfo(const QString &nickName_, const QString &password_)
 quint64 PlayerInfo::add(const QString &nickName, const QString &password)
 {
     QMutexLocker locker(&id_player_mutex);
-    quint64 id=QRandomGenerator::global()->bounded(1ull, ID_MAX);
-    while(id_player_map.contains(id))
-        id=QRandomGenerator::global()->bounded(1ull, ID_MAX);
+    id_player_map.insert(0, nullptr);
+    auto id = (id_player_map.end() - 1).key() + 1;
+
     PlayerInfo *pInfo=new PlayerInfo(nickName, password);
     id_player_map.insert(id,pInfo);
+
+    PlayerSocket::stateDisplay->append("注册账号" + QString::number(id));
+
     QJsonObject infoJson;
     infoJson.insert("nickname", nickName);
     infoJson.insert("password", password);
@@ -26,6 +30,7 @@ quint64 PlayerInfo::add(const QString &nickName, const QString &password)
     QFile *file = new QFile(ACCOUNT_FILE_PATH);
     file->open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text);
     file->write(QJsonDocument(accountsJson).toJson());
+    qDebug() << QJsonDocument(accountsJson).toJson();
     file->close();
     return id;
 }

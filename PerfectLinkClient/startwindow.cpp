@@ -22,7 +22,7 @@ StartWindow::StartWindow(QWidget *parent)
 	connect(ui->passwordInput, &QLineEdit::returnPressed, this, &StartWindow::onSubmitButton);
 }
 
-void StartWindow::onSignupSuccess(quint64 id) 
+void StartWindow::onSignupSuccess(quint64 id)
 {
 	showError("注册成功! 您的账号为" + QString::number(id));
 	ui->idInput->setReadOnly(false);
@@ -42,7 +42,6 @@ void StartWindow::onSignupFail(const QString &error)
 
 void StartWindow::onLoginSuccess(const QString &nickname) 
 {
-	emit loginSuccess(ui->idInput->text().toULongLong(), nickname);
 	ui->idInput->clear();
 	ui->passwordInput->clear();
 	ui->errorLabel->clear();
@@ -50,6 +49,7 @@ void StartWindow::onLoginSuccess(const QString &nickname)
 	ui->passwordInput->setReadOnly(false);
 	ui->submitButton->setEnabled(true);
 	ui->shiftButton->setEnabled(true);
+	emit loginSuccess(ui->idInput->text().toULongLong(), nickname);
 }
 
 void StartWindow::onLoginFail(const QString &error) 
@@ -90,6 +90,10 @@ void StartWindow::onSubmitButton()
 		showError("密码不能为空!");
 		return;
 	}
+	ui->idInput->setReadOnly(true);
+	ui->passwordInput->setReadOnly(true);
+	ui->submitButton->setEnabled(false);
+	ui->shiftButton->setEnabled(false);
 	if (flag) {
 		if (id.isEmpty()) {
 			showError("账号不能为空!");
@@ -105,10 +109,6 @@ void StartWindow::onSubmitButton()
 		ui->errorLabel->setText("注册中...");
 		emit signupRequest(id, password);
 	}
-	ui->idInput->setReadOnly(true);
-	ui->passwordInput->setReadOnly(true);
-	ui->submitButton->setEnabled(false);
-	ui->shiftButton->setEnabled(false);
 }
 
 void StartWindow::showError(const QString &error) 

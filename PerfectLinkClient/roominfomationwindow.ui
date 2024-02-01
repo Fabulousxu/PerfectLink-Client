@@ -103,7 +103,7 @@ QWidget#widget {
          <number>20</number>
         </property>
         <property name="bottomMargin">
-         <number>20</number>
+         <number>15</number>
         </property>
         <item>
          <widget class="QLabel" name="label_17">
@@ -125,7 +125,7 @@ QWidget#widget {
          </widget>
         </item>
         <item>
-         <widget class="QLabel" name="label_8">
+         <widget class="QLabel" name="errorLabel">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
             <horstretch>0</horstretch>
@@ -173,7 +173,7 @@ QWidget#widget {
           <item>
            <layout class="QVBoxLayout" name="verticalLayout_3" stretch="1,0,0,2">
             <property name="spacing">
-             <number>10</number>
+             <number>5</number>
             </property>
             <item>
              <spacer name="verticalSpacer_3">
@@ -252,6 +252,24 @@ QPushButton:pressed {
             </item>
             <item>
              <widget class="QWidget" name="roomListWidget" native="true">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>377</width>
+                <height>291</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>377</width>
+                <height>291</height>
+               </size>
+              </property>
               <property name="styleSheet">
                <string notr="true">QWidget#roomListWidget {
 	background-color: rgb(143, 166, 105);
@@ -259,7 +277,7 @@ QPushButton:pressed {
 	border-radius: 5px;
 }</string>
               </property>
-              <layout class="QVBoxLayout" name="verticalLayout_2">
+              <layout class="QVBoxLayout" name="verticalLayout_2" stretch="1,1,1,1,1,0">
                <property name="spacing">
                 <number>5</number>
                </property>
@@ -277,6 +295,12 @@ QPushButton:pressed {
                </property>
                <item>
                 <widget class="QWidget" name="room1Display" native="true">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
                  <property name="styleSheet">
                   <string notr="true">QWidget {
 	background-color: rgb(202, 202, 0);
@@ -330,7 +354,7 @@ QWidget#room1Display {
                      </font>
                     </property>
                     <property name="text">
-                     <string>10001</string>
+                     <string>1</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignCenter</set>
@@ -362,7 +386,7 @@ QWidget#room1Display {
                      <string notr="true">color: rgb(95, 83, 97);</string>
                     </property>
                     <property name="text">
-                     <string>3</string>
+                     <string>1</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignCenter</set>
@@ -397,7 +421,7 @@ QWidget#room1Display {
                      </font>
                     </property>
                     <property name="text">
-                     <string>4</string>
+                     <string>2</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignCenter</set>
@@ -438,6 +462,12 @@ QPushButton:pressed {
                </item>
                <item>
                 <widget class="QWidget" name="room2Display" native="true">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
                  <property name="styleSheet">
                   <string notr="true">QWidget {
 	background-color: rgb(202, 202, 0);
@@ -491,7 +521,7 @@ QWidget#room2Display {
                      </font>
                     </property>
                     <property name="text">
-                     <string>10002</string>
+                     <string>2</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignCenter</set>
@@ -523,7 +553,7 @@ QWidget#room2Display {
                      <string notr="true">color: rgb(95, 83, 97);</string>
                     </property>
                     <property name="text">
-                     <string>3</string>
+                     <string>1</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignCenter</set>
@@ -558,7 +588,7 @@ QWidget#room2Display {
                      </font>
                     </property>
                     <property name="text">
-                     <string>4</string>
+                     <string>2</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignCenter</set>
@@ -599,6 +629,12 @@ QPushButton:pressed {
                </item>
                <item>
                 <widget class="QWidget" name="room3Display" native="true">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
                  <property name="styleSheet">
                   <string notr="true">QWidget {
 	background-color: rgb(202, 202, 0);
@@ -652,7 +688,7 @@ QWidget#room3Display {
                      </font>
                     </property>
                     <property name="text">
-                     <string>10003</string>
+                     <string>3</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignCenter</set>
@@ -684,7 +720,7 @@ QWidget#room3Display {
                      <string notr="true">color: rgb(95, 83, 97);</string>
                     </property>
                     <property name="text">
-                     <string>3</string>
+                     <string>1</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignCenter</set>
@@ -719,7 +755,7 @@ QWidget#room3Display {
                      </font>
                     </property>
                     <property name="text">
-                     <string>4</string>
+                     <string>2</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignCenter</set>
@@ -760,6 +796,12 @@ QPushButton:pressed {
                </item>
                <item>
                 <widget class="QWidget" name="room4Display" native="true">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
                  <property name="styleSheet">
                   <string notr="true">QWidget {
 	background-color: rgb(202, 202, 0);
@@ -813,7 +855,7 @@ QWidget#room4Display {
                      </font>
                     </property>
                     <property name="text">
-                     <string>10004</string>
+                     <string>4</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignCenter</set>
@@ -845,7 +887,7 @@ QWidget#room4Display {
                      <string notr="true">color: rgb(95, 83, 97);</string>
                     </property>
                     <property name="text">
-                     <string>3</string>
+                     <string>1</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignCenter</set>
@@ -880,7 +922,7 @@ QWidget#room4Display {
                      </font>
                     </property>
                     <property name="text">
-                     <string>4</string>
+                     <string>2</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignCenter</set>
@@ -921,6 +963,12 @@ QPushButton:pressed {
                </item>
                <item>
                 <widget class="QWidget" name="room5Display" native="true">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
                  <property name="styleSheet">
                   <string notr="true">QWidget {
 	background-color: rgb(202, 202, 0);
@@ -974,7 +1022,7 @@ QWidget#room5Display {
                      </font>
                     </property>
                     <property name="text">
-                     <string>10005</string>
+                     <string>5</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignCenter</set>
@@ -1006,7 +1054,7 @@ QWidget#room5Display {
                      <string notr="true">color: rgb(95, 83, 97);</string>
                     </property>
                     <property name="text">
-                     <string>3</string>
+                     <string>1</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignCenter</set>
@@ -1041,7 +1089,7 @@ QWidget#room5Display {
                      </font>
                     </property>
                     <property name="text">
-                     <string>4</string>
+                     <string>2</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignCenter</set>
@@ -1079,6 +1127,19 @@ QPushButton:pressed {
                   </item>
                  </layout>
                 </widget>
+               </item>
+               <item>
+                <spacer name="verticalSpacer_4">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>40</height>
+                  </size>
+                 </property>
+                </spacer>
                </item>
               </layout>
              </widget>
@@ -1285,7 +1346,7 @@ selection-background-color: rgb(150, 150, 150);
 </string>
               </property>
               <property name="text">
-               <string>123456789</string>
+               <string/>
               </property>
               <property name="alignment">
                <set>Qt::AlignCenter</set>

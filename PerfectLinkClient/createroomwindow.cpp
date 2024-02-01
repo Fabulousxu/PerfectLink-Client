@@ -143,10 +143,36 @@ void CreateRoomWindow::setLevel(int l)
 	} else if (l == 3) { ui->levelButton->setText("自定义"); }
 }
 
+void CreateRoomWindow::onCreateRoomSuccess(quint64 rid)
+{
+	ui->heightInput->setReadOnly(false);
+	ui->widthInput->setReadOnly(false);
+	ui->patternNumberInput->setReadOnly(false);
+	ui->timeInput->setReadOnly(false);
+	ui->modeButton->setEnabled(true);
+	ui->levelButton->setEnabled(true);
+	ui->backButton->setEnabled(true);
+	ui->createRoomButton->setEnabled(true);
+	emit createRoomSuccess(rid);
+}
+
+void CreateRoomWindow::onCreateRoomFail(const QString &error)
+{
+	showError(error);
+	ui->heightInput->setReadOnly(false);
+	ui->widthInput->setReadOnly(false);
+	ui->patternNumberInput->setReadOnly(false);
+	ui->timeInput->setReadOnly(false);
+	ui->modeButton->setEnabled(true);
+	ui->levelButton->setEnabled(true);
+	ui->backButton->setEnabled(true);
+	ui->createRoomButton->setEnabled(true);
+}
+
 void CreateRoomWindow::onBackButton()
 {
-	emit backToHome(mode);
 	setLevel(0);
+	emit backToHome(mode);
 }
 
 void CreateRoomWindow::onLevelButton()
@@ -160,7 +186,6 @@ void CreateRoomWindow::onCreateRoomButton()
 		showError("图案数量必须为偶数个!");
 		return;
 	}
-	emit createRoomRequest(width, height, patternNumber, time);
 	ui->errorLabel->setText("创建房间中...");
 	ui->heightInput->setReadOnly(true);
 	ui->widthInput->setReadOnly(true);
@@ -170,6 +195,7 @@ void CreateRoomWindow::onCreateRoomButton()
 	ui->levelButton->setEnabled(false);
 	ui->backButton->setEnabled(false);
 	ui->createRoomButton->setEnabled(false);
+	emit createRoomRequest(mode - 1, width, height, patternNumber, time);
 }
 
 void CreateRoomWindow::onHeightInput()

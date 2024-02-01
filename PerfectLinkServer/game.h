@@ -60,8 +60,7 @@ inline Direction opposite(Direction d) { return (Direction)(d < Down ? d + 2 : d
 inline QPoint neighbor(int x, int y, Direction d) { return d & 0x1 ? QPoint(x + d - 2, y) : QPoint(x, y + d - 1); }
 inline QPoint neighbor(const QPoint &p, Direction d) { return neighbor(p.x(), p.y(), d); }
 
-class Player : public QObject {
-    Q_OBJECT
+class Player {
 public:
     QPoint position; /* 玩家当前坐标 */
     int score; /* 玩家当前分数 */
@@ -69,8 +68,10 @@ public:
     int moveCoolDown; /* 移动冷却时间(ms) */
     QTimer *moveCoolDownTimer; /* 移动冷却 */
 
+    Player() {}
     Player(QPoint p);
     Player(int x, int y) : Player(QPoint(x, y)) {};
+    ~Player() { delete moveCoolDownTimer; }
 };
 
 class Game : public QObject {
@@ -87,12 +88,12 @@ public:
 
     int getWidth() const { return block.size(); }
     int getHeight() const { return block.empty() ? 0 : block[0].size(); }
-    QVector<QVector<int>> getBlock() { return block; } /* 获取方块 */
+    const QVector<QVector<int>> &getBlock() { return block; } /* 获取方块 */
     void initializeBlock(int h, int w, QVector<int> pattern); /* 初始化地图 */
+    const auto &getPlayer() { return player; }
 
-    //TODO
-    //void start(QList<quint64> playerIds);
-    //void end();
+    void start(QList<quint64> playerIds);
+
 public slots:
     void onMove(quint64 id, Direction d); /* 人物移动 */
 
@@ -115,5 +116,5 @@ signals:
     void showSelectBlock(quint64 id, const QPoint &p); /* 显示指定方块被选中 */
     void showUnselectBlock(quint64 id, const QPoint &p); /* 显示指定方块取消选中 */
     void showMatchPath(quint64 id, const QVector<QPoint> &path); /* 显示匹配路径 */
-
+    void showScoreChanged(quint64 id, int score); /* 显示分数改变 */
 };

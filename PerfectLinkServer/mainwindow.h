@@ -3,7 +3,7 @@
 
 #include <QMainWindow>
 #include <QTcpServer>
-
+#include "playersocket.h"
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -19,6 +19,7 @@ public:
 private:
     Ui::MainWindow *ui;
     QTcpServer *server;
+    QList<PlayerSocket*> clients;
 private slots:
     void onNewConnection();
 };

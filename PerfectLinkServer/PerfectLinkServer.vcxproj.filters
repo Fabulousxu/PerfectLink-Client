@@ -60,16 +60,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="game.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="playerinfo.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="playersocket.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="room.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -77,5 +68,16 @@
     <None Include="data\account.json">
       <Filter>Resource Files</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="playersocket.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="room.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="game.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
 </Project>

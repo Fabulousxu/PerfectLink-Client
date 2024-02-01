@@ -23,6 +23,7 @@ HomeWindow::HomeWindow(QWidget *parent)
 	connect(ui->createRoomButton, &QPushButton::clicked, this, &HomeWindow::onCreatRoomButton);
 	connect(ui->matchRoomButton, &QPushButton::clicked, this, &HomeWindow::onMatchRoomButton);
 	connect(createRoomWindow, &CreateRoomWindow::backToHome, this, &HomeWindow::onBackFromCreateRoomWindow);
+	connect(roomInfomationWindow, &RoomInfomationWindow::backToHome, this, &HomeWindow::onBackFromRoomInfomationWindow);
 }
 
 void HomeWindow::setAccountInfomation(quint64 id, const QString &nickname)
@@ -56,14 +57,24 @@ void HomeWindow::onBackFromCreateRoomWindow(int mode)
 	createRoomWindow->hide();
 }
 
+void HomeWindow::onBackFromRoomInfomationWindow(int mode)
+{
+	setMode(mode);
+	roomInfomationWindow->hide();
+}
+
 void HomeWindow::onCreatRoomButton()
 {
 	createRoomWindow->setMode(mode);
+	createRoomWindow->setLevel(0);
 	createRoomWindow->show();
 }
 
 void HomeWindow::onMatchRoomButton()
 {
+	roomInfomationWindow->setMode(mode);
+	roomInfomationWindow->show();
+	emit roomInfomationWindow->requireRoomRequest(mode + 1);
 }
 
 void HomeWindow::setMode(int m)

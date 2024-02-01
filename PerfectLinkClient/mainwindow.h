@@ -33,4 +33,5 @@ private:
 public slots:
     void onLoginSuccess(quint64 id, const QString &nickname); /* 登录成功 */
     void onLogoffSuccess(); /* 登出成功 */
+    void onCreateRoomSuccess(); /* 创建房间成功 */
 };

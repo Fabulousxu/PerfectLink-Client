@@ -1,9 +1,10 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "playersocket.h"
+#include "playerinfo.h"
 
 //TODO: Address? Port?
-QHostAddress addr("192.168.0.101");
+QHostAddress addr("127.0.0.1");
+#define SERVER_PORT 8080
 
 MainWindow::MainWindow(QWidget *parent)
     : QWidget(parent)
@@ -11,16 +12,20 @@ MainWindow::MainWindow(QWidget *parent)
     , server(new QTcpServer(this))
 {
     ui->setupUi(this);
-    //构造函数里直接开启服务器（合理否？） TODO
-    server->listen(addr,8080);
+
+    PlayerInfo::load();
+
+    PlayerSocket::setWidget(ui->userTable,ui->stateDisplay);
+    server->listen(addr, 8080);
     connect(server,&QTcpServer::newConnection, this, &MainWindow::onNewConnection);
 }
 
 void MainWindow::onNewConnection()//来了新的连接
 {
     //获取与之对话的socket
-    PlayerSocket *client=static_cast<PlayerSocket*>(server->nextPendingConnection());
-    client->init(ui->userTable,ui->stateDisplay);
+    auto sock=server->nextPendingConnection();
+    PlayerSocket *client=new PlayerSocket(sock,this);
+    clients.append(client);
     //TODO: 记录用户变化
 }
 

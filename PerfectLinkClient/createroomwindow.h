@@ -28,6 +28,7 @@ public:
 	~CreateRoomWindow() { delete ui; }
 
 	void setMode(int m);
+	void setLevel(int l);
 
 private:
 	Ui::CreateRoomWindowClass *ui;
@@ -44,7 +45,10 @@ private:
 	bool setHeight(int h); /* 设置纵向图案数量*/
 	bool setPatternNumber(int p); /* 设置图案种类数量 */
 	bool setTime(int t); /* 设置游戏时间 */
-	void setLevel(int l);
+
+public slots:
+	void onCreateRoomSuccess(quint64 rid); /* 响应创建房间成功 */
+	void onCreateRoomFail(const QString &); /* 响应创建房间失败 */
 
 private slots:
 	void onModeButton(); /* 响应模式切换按钮 */
@@ -58,5 +62,6 @@ private slots:
 
 signals:
 	void backToHome(int mode); /* 返回home界面 */
-	void createRoomRequest(int w, int h, int p, int t); /* 请求创建房间 */
+	void createRoomRequest(int playerNumber, int w, int h, int patternNumber, int time); /* 请求创建房间 */
+	void createRoomSuccess(quint64 rid); /* 创建房间成功 */
 };

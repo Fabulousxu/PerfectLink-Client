@@ -254,17 +254,17 @@ void PlayerSocket::onMove(int direction)
 
 PlayerSocket::~PlayerSocket()
 {
-    if(id) PlayerInfo::remove(id);
+    //if(id) PlayerInfo::remove(id);
     //TODO 没想好2024.2.1
     //if(gamingRoom) Room::remove(gamingRoom->getIdString().toInt());
 }
-void PlayerSocket::onGameBegin(const QJsonArray &initMap)
+void PlayerSocket::onGameBegin(const QJsonObject &data)
 {
     if(state!=PREPARE)
     {
         reply(Reply::ERROR, {{"error", Reply::SYNC_ERROR}});
         return;
     }
-    reply(Reply::BEGIN_GAME, {{"map",initMap}});
+    reply(Reply::BEGIN_GAME, data);
     state=GAMING;
 }

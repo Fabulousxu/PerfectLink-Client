@@ -36,6 +36,7 @@ public slots:
 	void onLogoffSuccess(); /* 响应登出成功 */
 	void onLogoffFail(const QString &error) { showError(error); }; /* 响应登出失败 */
 	void onBackFromCreateRoomWindow(int mode);
+	void onBackFromRoomInfomationWindow(int mode);
 
 private slots:
 	void onLogoffButton(); /* 响应登出按钮 */
@@ -48,6 +49,5 @@ signals:
 	void creatRoomRequest(int w, int h, int pattern, int time, int mode); /* 请求创建房间 */
 	void requireRoomRequest(); /* 请求获取房间信息 */
 	void enterRoomRequest(quint64 rid); /* 请求进入房间 */
-
 	void logoffSuccess(); /* 登出成功 */
 };

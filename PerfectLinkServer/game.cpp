@@ -1,11 +1,15 @@
 #include "game.h"
+#include <qmutex.h>
+
+#define SCORE_SINGLE 20 //单次得分20
+QMutex game_mutex;
 
 Player::Player(QPoint p)
     : position(p) {
     score = 0;
     select = nullptr;
     moveCoolDown = 400;
-    moveCoolDownTimer = new QTimer(this);
+    moveCoolDownTimer = new QTimer;
     moveCoolDownTimer->setInterval(moveCoolDown);
     moveCoolDownTimer->setSingleShot(true);
 }
@@ -21,8 +25,12 @@ Game::Game(
     ,patternNumber(patternNumber_)
     ,time(time_)
 {
-    //TODO 用patternNumber_ 初始化出pattern参数，加一个互不相同的、patternNumber个随机数
-    initializeBlock(height_, width_, /*patternGenerated*/);
+    QVector<int> pattern;
+    int pos = QRandomGenerator::global()->bounded(0, 32);
+    for (int i = 0; i < patternNumber_; ++i) {
+        pattern.append((pos + i) % 32);
+    }
+    initializeBlock(height_, width_, pattern);
 }
 void Game::initializeBlock(int h, int w, QVector<int> pattern) {
     int pos = 0, num = 0, total = h * w;
@@ -55,7 +63,22 @@ void Game::initializeBlock(int h, int w, QVector<int> pattern) {
     } while (false);
 }
 
+void Game::start(QList<quint64> playerIds)
+{
+    player.insert(playerIds[0], Player(1, 1));
+    if (playerIds.size() > 1) {
+        player.insert(playerIds[1], Player(getWidth() - 2, 1));
+        if (playerIds.size() > 2) {
+            player.insert(playerIds[2], Player(1, getHeight() - 2));
+            if (playerIds.size() > 3) {
+                player.insert(playerIds[3], Player(getWidth() - 2, getHeight() - 2));
+            }
+        }
+    }
+}
+
 void Game::onMove(quint64 id, Direction d) {
+    QMutexLocker locker(&game_mutex);
     Player &player = this->player[id];
     if (player.moveCoolDownTimer->isActive()) { return; }
     player.moveCoolDownTimer->start();
@@ -170,6 +193,7 @@ QVector<QPoint> Game::matchTurn2(const QPoint &a, const QPoint &b) {
 }
 
 void Game::select(quint64 id, const QPoint &p) {
+    QMutexLocker locker(&game_mutex);
     if (isFloor(getBlock(p)) || isWall(getBlock(p)) || isRemoving(getBlock(p))) { return; }
     Player &player = this->player[id];
     if (player.select && *player.select == p) { return; }
@@ -187,7 +211,9 @@ void Game::select(quint64 id, const QPoint &p) {
             *player.select = p;
             return;
         } else {
+            player.score += SCORE_SINGLE;
             emit showMatchPath(id, path);
+            emit showScoreChanged(id, player.score);
             delete player.select; player.select = nullptr;
             QTimer::singleShot(MATCH_TIME, [=] { getBlock(oldSelect) = getBlock(p) = 0; });
         }

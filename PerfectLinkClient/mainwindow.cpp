@@ -28,10 +28,14 @@ MainWindow::MainWindow(QWidget *parent)
     connect(socket, &Socket::logoffFail, homeWindow, &HomeWindow::onLogoffFail);
     connect(homeWindow, &HomeWindow::logoffSuccess, this, &MainWindow::onLogoffSuccess);
 
+    /* 创建房间处理 */
+    connect(homeWindow->createRoomWindow, &CreateRoomWindow::createRoomRequest, socket, &Socket::onCreateRoomRequest);
+    connect(socket, &Socket::createRoom, homeWindow->createRoomWindow, &CreateRoomWindow::onCreateRoomSuccess);
+    connect(homeWindow->createRoomWindow, &CreateRoomWindow::createRoomSuccess, this, &MainWindow::onCreateRoomSuccess);
 
     socket->connectToHost(SERVER_IP, SERVER_PORT);
-    //startWindow->show();
-    homeWindow->show();
+    startWindow->show();
+    //homeWindow->show();
 
 }
 
@@ -43,7 +47,15 @@ void MainWindow::onLoginSuccess(quint64 id, const QString &nickname) {
     accountInfomation.nickname = nickname;
 }
 
-void MainWindow::onLogoffSuccess() {
+void MainWindow::onLogoffSuccess()
+{
     homeWindow->hide();
     startWindow->show();
+}
+
+void MainWindow::onCreateRoomSuccess()
+{
+    homeWindow->createRoomWindow->hide();
+    homeWindow->hide();
+    gameWindow->show();
 }
