@@ -16,11 +16,13 @@ Game::Game(
     int time_,
     QObject *parent)
     :QObject(parent)
+    ,block{}
+    ,player{}
     ,patternNumber(patternNumber_)
     ,time(time_)
 {
-    //TODO 用patternNumber_ 初始化出pattern参数
-    initializeBlock(height_, width_, );
+    //TODO 用patternNumber_ 初始化出pattern参数，加一个互不相同的、patternNumber个随机数
+    initializeBlock(height_, width_, /*patternGenerated*/);
 }
 void Game::initializeBlock(int h, int w, QVector<int> pattern) {
     int pos = 0, num = 0, total = h * w;

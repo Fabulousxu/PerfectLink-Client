@@ -8,51 +8,7 @@
 #include <QTableWidget>
 #include "game.h"
 class Room;
-namespace Reply{
-enum EType
-{
-    ERROR=-1,//错误
-    REGISTER=0,//注册
-    LOGOFF,//注销
-    LOGIN,//登录
-    CREATE_ROOM,//创建房间
-    REQUIRE_ROOMS,//申请房间列表信息
-    ENTER_ROOM,//加入房间
-    EXIT_ROOM,//退出房间
-    PREPARE,//玩家准备
-    PLAYER_CHANGE,//房间人数变动
-    BEGIN_GAME,//房间游戏开始
-    MOVE,//移动
-    SELECT,//方块移动
-    PATH,//显示路径
-    MARK, //分数变动
-    END_GAME //游戏结束
-};
-#define ErrDef(errorName, errorString) constexpr char (errorName)[]=(errorString)
-ErrDef(ID_ERROR, "ID doesn\'t exist");
-ErrDef(PASSWORD_ERROR, "Wrong password");
-ErrDef(PASSWORD_UNSAFE, "Password Unsafe");
-ErrDef(ROOM_ERROR, "Room doesn\'t exist");
-ErrDef(ROOM_FULL, "Too many players in room");
-ErrDef(ROOM_START, "No entering because the game has begun");
-ErrDef(NOT_HOST, "You're not the host");
-ErrDef(SYNC_ERROR, "Bad network");
-#undef ErrDef
-}
-namespace Request{
-enum EType
-{
-    REGISTER=0,
-    LOGOFF,
-    LOGIN,
-    CREATE_ROOM,
-    REQUIRE_ROOMS,
-    ENTER_ROOM,
-    EXIT_ROOM,
-    PREPARE,
-    MOVE
-};
-}
+
 class PlayerSocket : public QObject
 {
     Q_OBJECT
@@ -86,17 +42,18 @@ public:
      */
     static void setWidget(QTableWidget *userTable_, QTextBrowser *stateDisplay_);
     /**
-     * @brief 回复给客户一条消息
-     * @param replyCode 回复消息的类别代号
-     * @param data 回复消息的data字段
-     */
-    void reply(Reply::EType replyCode, const QJsonObject &data);
-    /**
      * @brief 将收到的信息变成Json
      * @param bytesMsg 收到的二进制信息
      * @return 一个JSON对象
      */
     static QJsonObject requestInterpreter(QByteArray bytesMsg);
+
+    /**
+     * @brief 回复给客户一条消息
+     * @param replyCode 回复消息的类别代号
+     * @param data 回复消息的data字段
+     */
+    void reply(Reply::EType replyCode, const QJsonObject &data);
     /**
      * @brief 以字符串形式获取本玩家id
      * @return id字符串

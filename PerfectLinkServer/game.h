@@ -8,6 +8,43 @@
 #include <qrandom.h>
 #include <qtimer.h>
 
+namespace Reply
+{
+enum EType
+{
+    ERROR=-1,//错误
+    REGISTER=0,//注册
+    LOGOFF,//注销
+    LOGIN,//登录
+    CREATE_ROOM,//创建房间
+    REQUIRE_ROOMS,//申请房间列表信息
+    ENTER_ROOM,//加入房间
+    EXIT_ROOM,//退出房间
+    PREPARE,//玩家准备
+    PLAYER_CHANGE,//房间人数变动
+    BEGIN_GAME,//房间游戏开始
+    MOVE,//移动
+    SELECT,//方块移动
+    PATH,//显示路径
+    MARK, //分数变动
+    END_GAME //游戏结束
+};
+}
+namespace Request{
+enum EType
+{
+    REGISTER=0,
+    LOGOFF,
+    LOGIN,
+    CREATE_ROOM,
+    REQUIRE_ROOMS,
+    ENTER_ROOM,
+    EXIT_ROOM,
+    PREPARE,
+    MOVE
+};
+}
+
 #define WALL_WIDTH 1 /* 外圈墙格数 */
 #define SURROUNDING 3 /* 外圈墙和地板格数, 一定要设置大于1!! */
 #define MATCH_TIME 700 /* 方块匹配消除显示时间700ms */
@@ -25,7 +62,6 @@ inline QPoint neighbor(const QPoint &p, Direction d) { return neighbor(p.x(), p.
 
 class Player : public QObject {
     Q_OBJECT
-
 public:
     QPoint position; /* 玩家当前坐标 */
     int score; /* 玩家当前分数 */
@@ -53,6 +89,10 @@ public:
     int getHeight() const { return block.empty() ? 0 : block[0].size(); }
     QVector<QVector<int>> getBlock() { return block; } /* 获取方块 */
     void initializeBlock(int h, int w, QVector<int> pattern); /* 初始化地图 */
+
+    //TODO
+    //void start(QList<quint64> playerIds);
+    //void end();
 public slots:
     void onMove(quint64 id, Direction d); /* 人物移动 */
 

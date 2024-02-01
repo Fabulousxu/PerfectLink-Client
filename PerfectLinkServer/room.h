@@ -59,6 +59,11 @@ public:
      */
     int getPlayerCount() const {return player_state_map.size();}
     /**
+     * @brief 获取房间玩家个数上限
+     * @return 玩家个数上限，int
+     */
+    int getPlayerLimit() const {return playerLimit;}
+    /**
      * @brief 获取房间玩家信息
      * @return Json数组
      */

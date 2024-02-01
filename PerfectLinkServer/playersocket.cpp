@@ -1,10 +1,20 @@
-#include "playersocket.h"
 #include "room.h"
 #include "playerinfo.h"
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QRandomGenerator>
-
+namespace Reply
+{
+#define ErrDef(errorName, errorString) constexpr char (errorName)[]=(errorString)
+ErrDef(ID_ERROR, "ID doesn\'t exist");
+ErrDef(PASSWORD_ERROR, "Wrong password");
+ErrDef(PASSWORD_UNSAFE, "Password Unsafe");
+ErrDef(ROOM_ERROR, "Room doesn\'t exist");
+ErrDef(ROOM_FULL, "Too many players in room");
+ErrDef(ROOM_START, "No entering because the game has begun");
+ErrDef(SYNC_ERROR, "Bad network");
+#undef ErrDef
+}
 extern QMap<quint64, PlayerInfo*> id_player_map;
 extern QMap<quint64, Room*> id_room_map;
 
@@ -117,7 +127,7 @@ void PlayerSocket::onRead()
 
 void PlayerSocket::onDisconnect()//断连槽函数
 {
-    //TODO
+    //TODO 没想好2024.2.1，可能是退出登录
 
 
 
@@ -173,7 +183,6 @@ void PlayerSocket::onLogIn(quint64 id, const QString &password)
 void PlayerSocket::onCreateRoom(int playerLimit, int height, int width, int patternNumber, int time)
 {
     if(state!=ONLINE) return;
-    // TODO: 参数怎么存（是直接存一份在屋子？）
     gamingRoom=Room::add(this,playerLimit, height, width, patternNumber, time);
     reply(Reply::CREATE_ROOM,{{"roomId", gamingRoom->getIdString()}});
     state=IN_ROOM;
@@ -205,7 +214,7 @@ void PlayerSocket::onEnterRoom(quint64 roomId)
         return;
     }
     auto pRoom=id_room_map.value(roomId);
-    if(pRoom->getPlayerCount()>=/*Game::PLAYER_COUNT_MAX*/4)//人数太多
+    if(pRoom->getPlayerCount()>=pRoom->getPlayerLimit())//人数太多
     {
         reply(Reply::ENTER_ROOM,{
             {"state", false},
@@ -246,6 +255,7 @@ void PlayerSocket::onMove(int direction)
 PlayerSocket::~PlayerSocket()
 {
     if(id) PlayerInfo::remove(id);
+    //TODO 没想好2024.2.1
     //if(gamingRoom) Room::remove(gamingRoom->getIdString().toInt());
 }
 void PlayerSocket::onGameBegin(const QJsonArray &initMap)

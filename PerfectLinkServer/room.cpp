@@ -20,7 +20,9 @@ Room * Room::add(
     quint64 id=0;
     do id=QRandomGenerator::global()->bounded(1ull, ID_MAX);
     while(id_room_map.contains(id));
-    return new Room(host, id, playerLimit, height, width, patternNumber, time, PlayerSocket::userTable);
+    auto res=new Room(host, id, playerLimit, height, width, patternNumber, time, PlayerSocket::userTable);
+    id_room_map.insert(id, res);
+    return res;
 }
 
 bool Room::remove(quint64 id)
@@ -38,7 +40,7 @@ QList<Room*> Room::getSomeRooms(int playerLimit, int count)
     QList<Room*> res;
     foreach(auto pRoom, id_room_map)
     {
-        if(pRoom->playerLimit!=playerLimit)
+        if(pRoom->playerLimit!=playerLimit || pRoom->playerLimit<=pRoom->getPlayerCount())
             continue;
         res.append(pRoom);
         if(res.size()==count)
@@ -56,14 +58,14 @@ Room::Room(
     int time,
     QObject *parent)
     : QObject(parent)
-    , player_state_map{{host,false}}
+    , player_state_map{}
     , id(id_)
     , game(new Game(height, width, patternNumber, time, this))
     , playerLimit(playerLimit_)
 {
     connect(this, &Room::tryInitGame, this, &Room::onTryInitGame);
-    connect(this, &Room::gameBegin, host, &PlayerSocket::onGameBegin);
-    connect(host, &PlayerSocket::move, game, &Game::onMove);
+    addPlayer(host);
+    //TODO: 把game里的可视化的部分和控件结合在一起，用PlayerSocket::静态成员；
 }
 
 void Room::addPlayer(PlayerSocket *player)
@@ -72,6 +74,7 @@ void Room::addPlayer(PlayerSocket *player)
     player_state_map.insert(player,false);
     connect(this, &Room::gameBegin, player, &PlayerSocket::onGameBegin);
     connect(player, &PlayerSocket::move, game, &Game::onMove);
+    //TODO 涉及到game和socket沟通，在这写
     auto id=player->getId();
     broadcast(Reply::PLAYER_CHANGE,{
         {"enter",true},
@@ -87,6 +90,7 @@ void Room::removePlayer(PlayerSocket *player)
         player_state_map.remove(pPlayer);
         disconnect(this, 0, player, 0);
         disconnect(player, 0, game, 0);
+        disconnect(game, 0, player, 0);
         broadcast(Reply::PLAYER_CHANGE,{
             {"enter",false},
             {"playerId",player->getIdString()}
@@ -131,7 +135,6 @@ void Room::onTryInitGame()
         if(!prepare) return;
     //TODO initGame
 
-    //game=new Game(this);
     //foreach : connect(player, &PlayerSocket::move, game, &Game::onMove);
     //emit gameBegin()
 }
