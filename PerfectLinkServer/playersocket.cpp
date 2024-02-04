@@ -50,7 +50,9 @@ void PlayerSocket::reply(Reply::EType replyCode, const QJsonObject &data)
         {"reply",replyCode},
         {"data",data},
     });
+    qDebug() << "send:[[\n" << msg << "\n]]";
     socket->write(QJsonDocument(msg).toJson());
+    socket->flush();
 }
 void PlayerSocket::setPlayerState(EState state_)
 {
@@ -81,6 +83,9 @@ void PlayerSocket::setPlayerState(EState state_)
 void PlayerSocket::onRead()
 {
     auto jsonMsg=requestInterpreter(socket->readAll());
+
+    qDebug() << "receive[[\n" << jsonMsg << "\n]]";
+
     int requestCode=jsonMsg.value("request").toInt();
     QJsonObject data=jsonMsg.value("data").toObject({});
     switch(requestCode){
@@ -129,13 +134,6 @@ void PlayerSocket::onDisconnect()//断连槽函数
 {
     //TODO 没想好2024.2.1，可能是退出登录
 
-
-
-    if(id)
-    {
-        PlayerInfo::remove(id);
-        id=0;
-    }
     disconnect(this, 0, this, 0);
     this->deleteLater();
 }
@@ -166,8 +164,9 @@ void PlayerSocket::onLogOff(quint64 id)
 void PlayerSocket::onLogIn(quint64 id, const QString &password)
 {
     if(state!=OFFLINE || this->id) return; //不要重复登录
-    if(!id_player_map.contains(id))
-        reply(Reply::LOGIN, {{"state",false},{"error",Reply::ID_ERROR}});
+    if (!id_player_map.contains(id)) {
+        reply(Reply::LOGIN, { {"state",false},{"error",Reply::ID_ERROR} });
+    }
     else if(!id_player_map.value(id)->isPasswordMatched(password))//密码错误
         reply(Reply::LOGIN, {{"state",false},{"error",Reply::PASSWORD_ERROR}});
     else{
@@ -176,7 +175,8 @@ void PlayerSocket::onLogIn(quint64 id, const QString &password)
             {"nickname",id_player_map.value(id)->getNickName()}
         });
         this->id=id;
-        setPlayerState(ONLINE);
+        //setPlayerState(ONLINE);
+        state = ONLINE;
     }
 }
 
@@ -223,7 +223,9 @@ void PlayerSocket::onEnterRoom(quint64 roomId)
         return;
     }
     //加入成功
-    reply(Reply::ENTER_ROOM,{{"state",true},{"playerInfo",pRoom->getPlayerInfo()}});
+    auto data = pRoom->getRoomInfo();
+    data.insert("state", true);
+    reply(Reply::ENTER_ROOM, data);
     pRoom->addPlayer(this);
     state = IN_ROOM;
     gamingRoom=pRoom;

@@ -11,6 +11,9 @@ MainWindow::MainWindow(QWidget *parent)
     homeWindow = new HomeWindow(this);
     gameWindow = new GameWindow(this);
 
+    accountInfomation.id = 10001;
+    accountInfomation.nickname = "东川路徐先生";
+
     /* 注册处理 */
     connect(startWindow, &StartWindow::signupRequest, socket, &Socket::onSignupRequest);
     connect(socket, &Socket::signupSuccess, startWindow, &StartWindow::onSignupSuccess);
@@ -29,9 +32,23 @@ MainWindow::MainWindow(QWidget *parent)
     connect(homeWindow, &HomeWindow::logoffSuccess, this, &MainWindow::onLogoffSuccess);
 
     /* 创建房间处理 */
+    connect(homeWindow->createRoomWindow, &CreateRoomWindow::createRoomRequest, gameWindow, &GameWindow::setParameter);
     connect(homeWindow->createRoomWindow, &CreateRoomWindow::createRoomRequest, socket, &Socket::onCreateRoomRequest);
     connect(socket, &Socket::createRoom, homeWindow->createRoomWindow, &CreateRoomWindow::onCreateRoomSuccess);
     connect(homeWindow->createRoomWindow, &CreateRoomWindow::createRoomSuccess, this, &MainWindow::onCreateRoomSuccess);
+
+    /* 请求房间处理 */
+    connect(homeWindow->roomInfomationWindow, &RoomInfomationWindow::requireRoomRequest
+        , socket, &Socket::onRequireRoomRequest);
+    connect(socket, &Socket::requireRoom
+        , homeWindow->roomInfomationWindow, &RoomInfomationWindow::onRequireRoomSuccess);
+
+    /* 进入房间处理 */
+    connect(homeWindow->roomInfomationWindow, &RoomInfomationWindow::enterRoomRequest
+        , socket, &Socket::onEnterRoomRequest);
+    connect(homeWindow->roomInfomationWindow, &RoomInfomationWindow::enterRoomRequest
+        , this, [this](quint64 rid) { roomId = rid; });
+    connect(socket, &Socket::enterRoomSuccess, this, &MainWindow::onEnterRoomSuccess);
 
     socket->connectToHost(SERVER_IP, SERVER_PORT);
     startWindow->show();
@@ -53,9 +70,21 @@ void MainWindow::onLogoffSuccess()
     startWindow->show();
 }
 
-void MainWindow::onCreateRoomSuccess()
+void MainWindow::onCreateRoomSuccess(quint64 rid)
 {
     homeWindow->createRoomWindow->hide();
     homeWindow->hide();
+    gameWindow->onCreateRoomSuccess(rid, accountInfomation.id, accountInfomation.nickname);
     gameWindow->show();
+}
+
+void MainWindow::onEnterRoomSuccess(int playerLimit, int width, int height, int patternNumber, int time
+    , const QVector<QPair<quint64, QString>> &playerInfomation)
+{
+    homeWindow->roomInfomationWindow->onEnterRoomSuccess();
+    homeWindow->roomInfomationWindow->hide();
+    homeWindow->hide();
+    gameWindow->setParameter(playerLimit, width, height, patternNumber, time);
+    gameWindow->show();
+    gameWindow->onEnterRoomSuccess(playerInfomation, roomId, accountInfomation.id, accountInfomation.nickname);
 }

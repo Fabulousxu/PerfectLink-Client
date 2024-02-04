@@ -42,6 +42,7 @@ void StartWindow::onSignupFail(const QString &error)
 
 void StartWindow::onLoginSuccess(const QString &nickname) 
 {
+	auto id = ui->idInput->text().toULongLong();
 	ui->idInput->clear();
 	ui->passwordInput->clear();
 	ui->errorLabel->clear();
@@ -49,7 +50,7 @@ void StartWindow::onLoginSuccess(const QString &nickname)
 	ui->passwordInput->setReadOnly(false);
 	ui->submitButton->setEnabled(true);
 	ui->shiftButton->setEnabled(true);
-	emit loginSuccess(ui->idInput->text().toULongLong(), nickname);
+	emit loginSuccess(id, nickname);
 }
 
 void StartWindow::onLoginFail(const QString &error) 

@@ -1,10 +1,9 @@
 #include "playerinfo.h"
-#include "playersocket.h"
 #include <QRandomGenerator>
 
 QMutex id_player_mutex;
 QMap<quint64, PlayerInfo *> id_player_map;
-constexpr quint64 ID_MAX = 0x1fffffffffffff;
+constexpr quint64 ID_MAX = 3000;
 constexpr char ACCOUNT_FILE_PATH[]="./data/account.json";
 
 // TODO: 现在用Map只是权宜之计，后面是要改用数据库维护的
@@ -14,15 +13,16 @@ PlayerInfo::PlayerInfo(const QString &nickName_, const QString &password_)
     :nickName(nickName_),password(password_){}
 quint64 PlayerInfo::add(const QString &nickName, const QString &password)
 {
-    QMutexLocker locker(&id_player_mutex);
-    id_player_map.insert(0, nullptr);
-    auto id = (id_player_map.end() - 1).key() + 1;
+    //QMutexLocker locker(&id_player_mutex);
+
+    auto id=0ull;
+    do id=QRandomGenerator().bounded(1ull, ID_MAX);
+    while(id_player_map.contains(id));
+
+    qDebug()<<("注册账号" + QString::number(id));
 
     PlayerInfo *pInfo=new PlayerInfo(nickName, password);
     id_player_map.insert(id,pInfo);
-
-    PlayerSocket::stateDisplay->append("注册账号" + QString::number(id));
-
     QJsonObject infoJson;
     infoJson.insert("nickname", nickName);
     infoJson.insert("password", password);
@@ -30,7 +30,9 @@ quint64 PlayerInfo::add(const QString &nickName, const QString &password)
     QFile *file = new QFile(ACCOUNT_FILE_PATH);
     file->open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text);
     file->write(QJsonDocument(accountsJson).toJson());
+
     qDebug() << QJsonDocument(accountsJson).toJson();
+
     file->close();
     return id;
 }
@@ -58,10 +60,10 @@ bool PlayerInfo::load()
     file->close();
     QMutexLocker locker(&id_player_mutex);
     for (auto it = accountsJson.constBegin(); it != accountsJson.constEnd(); ++it) {
-        auto id = it.value().toString().toULongLong();
+        auto id = it.key().toULongLong();
         auto nickname = it.value().toObject().value("nickname").toString();
         auto password = it.value().toObject().value("password").toString();
-        if(id_player_map.contains(id)) continue;
+        //if(id_player_map.contains(id)) continue;
         id_player_map.insert(id,new PlayerInfo(nickname, password));
     }
     return true;

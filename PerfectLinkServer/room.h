@@ -64,10 +64,10 @@ public:
      */
     int getPlayerLimit() const {return playerLimit;}
     /**
-     * @brief 获取房间玩家信息
-     * @return Json数组
+     * @brief 获取房间信息
+     * @return Json对象
      */
-    QJsonArray getPlayerInfo() const;
+    QJsonObject getRoomInfo() const;
 private:
     /**
      * @brief 构造函数
@@ -96,6 +96,8 @@ private:
     quint64 id; //0是未分配
     Game *game;
     int playerLimit;
+    int patternNumber;
+    int time;
 
     /**
      * @brief 给房内玩家群发

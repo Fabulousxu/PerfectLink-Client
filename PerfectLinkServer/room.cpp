@@ -65,18 +65,20 @@ Room::Room(
     , id(id_)
     , game(new Game(height, width, patternNumber, time, this))
     , playerLimit(playerLimit_)
+    , patternNumber(patternNumber)
+    , time(time)
 {
     connect(this, &Room::tryInitGame, this, &Room::onTryInitGame);
     addPlayer(host);
     //TODO: 把game里的可视化的部分和控件结合在一起，用PlayerSocket::静态成员；
-
+    
 
 }
 
 void Room::addPlayer(PlayerSocket *player)
 {
     if(player_state_map.contains(player)) return;
-    player_state_map.insert(player,false);
+
     connect(this, &Room::gameBegin, player, &PlayerSocket::onGameBegin);
     connect(player, &PlayerSocket::move, game, &Game::onMove);
     //涉及到game和socket沟通
@@ -123,6 +125,7 @@ void Room::addPlayer(PlayerSocket *player)
         {"playerId",player->getIdString()},
         {"nickname",id_player_map.value(id)->getNickName()}
     });
+    player_state_map.insert(player, false);
 }
 
 void Room::removePlayer(PlayerSocket *player)
@@ -150,7 +153,7 @@ void Room::changePrepare(PlayerSocket *player, bool prepare)
         emit tryInitGame();
     });
 }
-QJsonArray Room::getPlayerInfo() const
+QJsonObject Room::getRoomInfo() const
 {
     QJsonArray arr;
     foreach(auto pPlayer, player_state_map.keys())
@@ -162,7 +165,15 @@ QJsonArray Room::getPlayerInfo() const
             {"nickname",nickname}
         });
     }
-    return arr;
+    
+    QJsonObject data;
+    data.insert("playerLimit", playerLimit);
+    data.insert("width", game->getWidth());
+    data.insert("height", game->getHeight());
+    data.insert("patternNumber", patternNumber);
+    data.insert("time", time);
+    data.insert("playerInfo", arr);
+    return data;
 }
 
 void Room::broadcast(Reply::EType replyCode, const QJsonObject &data) const

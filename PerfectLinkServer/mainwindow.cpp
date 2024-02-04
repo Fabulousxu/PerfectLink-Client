@@ -14,7 +14,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     PlayerInfo::load();
-
     PlayerSocket::setWidget(ui->userTable,ui->stateDisplay);
     server->listen(addr, 8080);
     connect(server,&QTcpServer::newConnection, this, &MainWindow::onNewConnection);

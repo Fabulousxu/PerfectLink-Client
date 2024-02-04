@@ -79,7 +79,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QProgressBar" name="progressBar">
+      <widget class="QProgressBar" name="timeProgressBar">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -128,7 +128,7 @@ QProgressBar::chunk {
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="label">
+      <widget class="QLabel" name="timeLabel_2">
        <property name="font">
         <font>
          <family>Minecraft AE</family>
@@ -266,7 +266,7 @@ QWidget#player1Display {
                 </widget>
                </item>
                <item>
-                <widget class="QLabel" name="label_2">
+                <widget class="QLabel" name="nickname1Label">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
                    <horstretch>0</horstretch>
@@ -363,7 +363,7 @@ QWidget#player1Display {
                 </widget>
                </item>
                <item>
-                <widget class="QLabel" name="player1Score">
+                <widget class="QLabel" name="score1Label">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                    <horstretch>0</horstretch>
@@ -456,7 +456,7 @@ QWidget#player1Display {
                 </widget>
                </item>
                <item>
-                <widget class="QLabel" name="label_6">
+                <widget class="QLabel" name="nickname2Label">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
                    <horstretch>0</horstretch>
@@ -574,7 +574,7 @@ QWidget#player1Display {
                 </widget>
                </item>
                <item>
-                <widget class="QLabel" name="player2Score">
+                <widget class="QLabel" name="score2Label">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                    <horstretch>0</horstretch>
@@ -667,7 +667,7 @@ QWidget#player1Display {
                 </widget>
                </item>
                <item>
-                <widget class="QLabel" name="label_10">
+                <widget class="QLabel" name="nickname3Label">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
                    <horstretch>0</horstretch>
@@ -785,7 +785,7 @@ QWidget#player1Display {
                 </widget>
                </item>
                <item>
-                <widget class="QLabel" name="player3Score">
+                <widget class="QLabel" name="score3Label">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                    <horstretch>0</horstretch>
@@ -878,7 +878,7 @@ QWidget#player1Display {
                 </widget>
                </item>
                <item>
-                <widget class="QLabel" name="label_14">
+                <widget class="QLabel" name="nickname4Label">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                    <horstretch>0</horstretch>
@@ -993,7 +993,7 @@ QWidget#player1Display {
                 </widget>
                </item>
                <item>
-                <widget class="QLabel" name="player4Score">
+                <widget class="QLabel" name="score4Label">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                    <horstretch>0</horstretch>

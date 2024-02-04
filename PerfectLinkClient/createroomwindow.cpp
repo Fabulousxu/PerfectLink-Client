@@ -195,7 +195,7 @@ void CreateRoomWindow::onCreateRoomButton()
 	ui->levelButton->setEnabled(false);
 	ui->backButton->setEnabled(false);
 	ui->createRoomButton->setEnabled(false);
-	emit createRoomRequest(mode - 1, width, height, patternNumber, time);
+	emit createRoomRequest(mode + 1, width, height, patternNumber, time);
 }
 
 void CreateRoomWindow::onHeightInput()

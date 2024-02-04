@@ -71,7 +71,7 @@ void RoomInfomationWindow::onRequireRoomSuccess(const QVector<QPair<quint64, int
 {
 	showError("房间信息获取成功");
 	int i;
-	for (i = 0; i < roomInfomation.size(); ++i) {
+	for (i = 0; i < qMin(roomInfomation.size(), 5); ++i) {
 		roomIdLabel[i]->setText(QString::number(roomInfomation[i].first));
 		roomPlayerNumberLabel[i]->setText(QString::number(roomInfomation[i].second));
 		playerNumberLabel[i]->setText(QString::number(mode + 1));

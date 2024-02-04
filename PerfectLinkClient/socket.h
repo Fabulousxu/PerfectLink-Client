@@ -11,6 +11,7 @@
 
 namespace Reply {
     enum Type {
+        Error = -1,
         Signup = 0, /* 注册 */
         Unregister, /* 永久注销 */
         Login, /* 登录 */
@@ -53,6 +54,8 @@ class Socket : public QTcpSocket
 public:
 	Socket(QObject *parent);
 
+    void request(Request::Type request, const QJsonObject &data);
+
 private:
 
 
@@ -77,4 +80,7 @@ signals:
     void logoffFail(const QString &error); /* 登出失败 */
     void createRoom(quint64 rid); /* 成功创建房间 */
     void requireRoom(const QVector<QPair<quint64, int>> &roomInfomation); /* 成功获取房间信息 */
+    void enterRoomSuccess(int playerLimit, int width, int height, int patternNumber, int time
+        , const QVector<QPair<quint64, QString>> &playerInfomation); /* 成功进入房间 */
+    void enterRoomFail(const QString &error); /* 进入房间失败 */
 };
