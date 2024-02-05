@@ -132,6 +132,7 @@ GameCanvas::GameCanvas(int w, int h, QWidget *parent) : QWidget(parent) {
 	Cell::size = qMin(parent->height() * 0.8 / mapHeight(), parent->width() * 0.6 / mapWidth());
 	setFixedSize(Cell::size * mapWidth(), Cell::size * mapHeight());
 	move((parent->width() - width()) / 2, (parent->height() - height()) / 2);
+	show();
 	for (auto x = 0; x < mapWidth(); ++x) {
 		if (x < WALL_WIDTH || x >= mapWidth() - WALL_WIDTH) {
 			for (auto y = 0; y < mapHeight(); ++y) { block[x][y] = new Block(x, y, -1, this); }

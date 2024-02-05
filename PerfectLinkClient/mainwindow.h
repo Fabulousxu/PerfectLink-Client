@@ -37,4 +37,5 @@ public slots:
     void onCreateRoomSuccess(quint64 rid); /* 创建房间成功 */
     void onEnterRoomSuccess(int playerLimit, int width, int height, int patternNumber, int time
         , const QVector<QPair<quint64, QString>> &playerInfomation); /* 进入房间成功 */
+    void onExitRoomSuccess(); /* 离开房间成功 */
 };

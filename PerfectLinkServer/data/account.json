@@ -1,6 +1,18 @@
 {
-    "2071": {
-        "nickname": "123",
-        "password": "456"
+    "1001": {
+        "nickname": "用户1",
+        "password": "123"
+    },
+    "1002": {
+        "nickname": "用户2",
+        "password": "123"
+    },
+    "1003": {
+        "nickname": "用户3",
+        "password": "123"
+    },
+    "1004": {
+        "nickname": "用户4",
+        "password": "123"
     }
 }

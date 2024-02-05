@@ -1,5 +1,6 @@
 #include "game.h"
 #include <qmutex.h>
+#include <qdebug.h>
 
 #define SCORE_SINGLE 20 //单次得分20
 QMutex game_mutex;
@@ -8,8 +9,8 @@ Player::Player(QPoint p)
     : position(p) {
     score = 0;
     select = nullptr;
-    moveCoolDown = 400;
-    moveCoolDownTimer = new QTimer;
+    moveCoolDown = 300;
+    moveCoolDownTimer = new QTimer();
     moveCoolDownTimer->setInterval(moveCoolDown);
     moveCoolDownTimer->setSingleShot(true);
 }
@@ -26,17 +27,24 @@ Game::Game(
     ,time(time_)
 {
     QVector<int> pattern;
-    int pos = QRandomGenerator::global()->bounded(0, 32);
+    int pos = QRandomGenerator::global()->bounded(1, 33);
     for (int i = 0; i < patternNumber_; ++i) {
-        pattern.append((pos + i) % 32);
+        pattern.append((pos + i) % 32 + 1);
     }
     initializeBlock(height_, width_, pattern);
+}
+Game::~Game()
+{
+    for (auto p : player) {
+        delete p;
+    }
+    player.clear();
 }
 void Game::initializeBlock(int h, int w, QVector<int> pattern) {
     int pos = 0, num = 0, total = h * w;
     block = QVector<QVector<int>>(w + SURROUNDING * 2, QVector<int>(h + SURROUNDING * 2, 0));
-    auto width=getWidth();
-    auto height=getHeight();
+    auto width = getWidth();
+    auto height = getHeight();
     for (auto x = 0; x < width; ++x) {
         if (x < WALL_WIDTH || x >= width - WALL_WIDTH) {
             for (auto &b : block[x]) { b = -1; }
@@ -61,33 +69,41 @@ void Game::initializeBlock(int h, int w, QVector<int> pattern) {
             }
         }
     } while (false);
+
 }
 
 void Game::start(QList<quint64> playerIds)
 {
-    player.insert(playerIds[0], Player(1, 1));
+    player.insert(playerIds[0], new Player(1, 1));
     if (playerIds.size() > 1) {
-        player.insert(playerIds[1], Player(getWidth() - 2, 1));
+        player.insert(playerIds[1], new Player(getWidth() - 2, 1));
         if (playerIds.size() > 2) {
-            player.insert(playerIds[2], Player(1, getHeight() - 2));
+            player.insert(playerIds[2], new Player(1, getHeight() - 2));
             if (playerIds.size() > 3) {
-                player.insert(playerIds[3], Player(getWidth() - 2, getHeight() - 2));
+                player.insert(playerIds[3], new Player(getWidth() - 2, getHeight() - 2));
             }
         }
     }
 }
 
 void Game::onMove(quint64 id, Direction d) {
-    QMutexLocker locker(&game_mutex);
-    Player &player = this->player[id];
-    if (player.moveCoolDownTimer->isActive()) { return; }
-    player.moveCoolDownTimer->start();
-    if (isFloor(getBlock(neighbor(player.position, d)))) {
-        player.position = neighbor(player.position, d);
+    //QMutexLocker locker(&game_mutex);
+    Player *player = this->player[id];
+    if (player->moveCoolDownTimer->isActive()) { return; }
+    player->moveCoolDownTimer->start();
+    qDebug() << "before move: " << player->position;
+    if (isFloor(getBlock(neighbor(player->position, d)))) {
+        for (auto p : this->player) {
+            if (neighbor(player->position, d) == p->position) {
+                emit showMovePlayer(id, false, d);
+                return;
+            }
+        }
+        player->position = neighbor(player->position, d);
         emit showMovePlayer(id, true, d);
     } else {
         emit showMovePlayer(id, false, d);
-        select(id, neighbor(player.position, d));
+        select(id, neighbor(player->position, d));
     }
 }
 
@@ -193,29 +209,29 @@ QVector<QPoint> Game::matchTurn2(const QPoint &a, const QPoint &b) {
 }
 
 void Game::select(quint64 id, const QPoint &p) {
-    QMutexLocker locker(&game_mutex);
+    //QMutexLocker locker(&game_mutex);
     if (isFloor(getBlock(p)) || isWall(getBlock(p)) || isRemoving(getBlock(p))) { return; }
-    Player &player = this->player[id];
-    if (player.select && *player.select == p) { return; }
+    Player *player = this->player[id];
+    if (player->select && *player->select == p) { return; }
     for (auto it = this->player.begin(); it != this->player.end(); ++it)
     {
         if (it.key() == id) { continue; }
-        if (it->select) { delete it->select; it->select = nullptr; }
+        if ((*it)->select) { delete (*it)->select; (*it)->select = nullptr; }
     }
     emit showSelectBlock(id, p);
-    if (player.select) {
-        auto oldSelect = *player.select;
+    if (player->select) {
+        auto oldSelect = *player->select;
         auto path = match(oldSelect, p);
         if (path.empty()) {
-            emit showUnselectBlock(id, *player.select);
-            *player.select = p;
+            emit showUnselectBlock(id, *player->select);
+            *player->select = p;
             return;
         } else {
-            player.score += SCORE_SINGLE;
+            player->score += SCORE_SINGLE;
             emit showMatchPath(id, path);
-            emit showScoreChanged(id, player.score);
-            delete player.select; player.select = nullptr;
+            emit showScoreChanged(id, player->score);
+            delete player->select; player->select = nullptr;
             QTimer::singleShot(MATCH_TIME, [=] { getBlock(oldSelect) = getBlock(p) = 0; });
         }
-    } else { player.select = new QPoint(p); return; }
+    } else { player->select = new QPoint(p); return; }
 }

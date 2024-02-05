@@ -31,7 +31,10 @@ PlayerSocket::PlayerSocket(QTcpSocket *socket_,QWidget *parent)
     connect(socket, &QTcpSocket::readyRead, this, &PlayerSocket::onRead);
     connect(socket, &QTcpSocket::disconnected, this, &PlayerSocket::onDisconnect);
     //记录有用户接入
-    stateDisplay->insertHtml("User <b>"+socket->peerAddress().toString()+"</b> In <br>");
+    stateDisplay->insertHtml(
+        "User <b>" + socket->peerAddress().toString()
+        + ":" + QString::number(socket->peerPort()) + "</b> In <br>");
+
 }
 void PlayerSocket::setWidget(QTableWidget *userTable_,QTextBrowser *stateDisplay_)
 {
@@ -50,7 +53,10 @@ void PlayerSocket::reply(Reply::EType replyCode, const QJsonObject &data)
         {"reply",replyCode},
         {"data",data},
     });
-    qDebug() << "send:[[\n" << msg << "\n]]";
+    
+    qDebug() << "send to<" << socket->peerAddress() << ':' << socket->peerPort()
+        << ">:[[\n" << msg << "\n]]";
+
     socket->write(QJsonDocument(msg).toJson());
     socket->flush();
 }
@@ -84,7 +90,8 @@ void PlayerSocket::onRead()
 {
     auto jsonMsg=requestInterpreter(socket->readAll());
 
-    qDebug() << "receive[[\n" << jsonMsg << "\n]]";
+    qDebug() << "receive from <" << socket->peerAddress() << ':' << socket->peerPort()
+        << ">[[\n" << jsonMsg << "\n]]";
 
     int requestCode=jsonMsg.value("request").toInt();
     QJsonObject data=jsonMsg.value("data").toObject({});
@@ -140,9 +147,9 @@ void PlayerSocket::onDisconnect()//断连槽函数
 
 void PlayerSocket::onRegister(const QString &nickname, const QString &password)
 {
-    if(state!=OFFLINE || id) return; //有id就不能继续注册咯
+    if(state!=OFFLINE) return; //有id就不能继续注册咯
     //TODO: 检查安全性？
-    id=PlayerInfo::add(nickname, password);
+    auto id=PlayerInfo::add(nickname, password);
     reply(Reply::REGISTER, QJsonObject{
         {"state",true},
         {"id", QString::number(id)}

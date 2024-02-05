@@ -3,12 +3,28 @@
 GameWindow::GameWindow(QWidget *parent)
 	: QWidget(parent)
 	, ui(new Ui::GameWindowClass())
+	, gameCanvas(nullptr)
 {
 	ui->setupUi(this);
 	setParent(parent);
 	setFixedSize(parent->size());
 	move(0, 0);
 	setAttribute(Qt::WA_StyledBackground);
+	setFocusPolicy(Qt::StrongFocus);
+	errorShowTimer = new QTimer(this);
+	errorShowTimer->setSingleShot(true);
+	errorShowTimer->setInterval(3000);
+	for (Direction d = Up; d <= Right; d = (Direction)(d + 1)) {
+		keyTimer[d] = new QTimer(this);
+		keyTimer[d]->setInterval(100);
+		connect(keyTimer[d], &QTimer::timeout, this, [this, d] {
+			emit moveRequest(d);
+			}
+		);
+	}
+	connect(errorShowTimer, &QTimer::timeout, this, [this] { ui->errorLabel->clear(); });
+	connect(ui->exitRoomButton, &QPushButton::clicked, this, &GameWindow::onExitRoomButton);
+	connect(ui->prepareButton, &QPushButton::clicked, this, &GameWindow::onPrepareButton);
 }
 
 void GameWindow::setParameter(int playerLimit, int w, int h, int patternNumber, int time)
@@ -18,6 +34,47 @@ void GameWindow::setParameter(int playerLimit, int w, int h, int patternNumber, 
 	height = h;
 	this->patternNumber = patternNumber;
 	this->time = time;
+}
+
+void GameWindow::keyPressEvent(QKeyEvent *event)
+{
+	if (event->isAutoRepeat()) { return; }
+	static Qt::Key key[4] = { Qt::Key_Up, Qt::Key_Left, Qt::Key_Down, Qt::Key_Right };
+	for (Direction d = Up; d <= Right; d = (Direction)(d + 1)) {
+		if (event->key() == key[d]) {
+			emit moveRequest(d);
+			if (!keyStack.empty()) { keyTimer[keyStack.top()]->stop(); }
+			keyStack.push(d);
+			keyTimer[d]->start();
+			return;
+		}
+	}
+}
+
+void GameWindow::keyReleaseEvent(QKeyEvent *event)
+{
+	if (event->isAutoRepeat()) { return; }
+	static Qt::Key key[4] = { Qt::Key_Up, Qt::Key_Left, Qt::Key_Down, Qt::Key_Right };
+	for (Direction d = Up; d <= Right; d = (Direction)(d + 1)) {
+		if (event->key() == key[d]) {
+			if (!keyStack.isEmpty() && keyStack.top() == d) {
+				keyStack.pop();
+				keyTimer[d]->stop();
+				if (!keyStack.isEmpty()) {
+					keyTimer[keyStack.top()]->start();
+				}
+				return;
+			} else {
+				for (auto it = keyStack.begin(); it != keyStack.end(); ++it) {
+					if (*it == d) {
+						keyStack.erase(it);
+						return;
+					}
+				}
+			}
+			return;
+		}
+	}
 }
 
 void GameWindow::onEnterRoomSuccess(const QVector<QPair<quint64, QString>> &playerInfomation
@@ -50,7 +107,10 @@ void GameWindow::onEnterRoomSuccess(const QVector<QPair<quint64, QString>> &play
 		scoreLabel.insert(playerInfomation[0].first, ui->score2Label);
 		pictureLabel.insert(playerInfomation[0].first, ui->player2Picture);
 		gameCanvas->appendPlayer(playerInfomation[0].first, 1);
+		prepareLabel.insert(playerInfomation[0].first, ui->prepare2Label);
+		ui->prepare2Label->hide();
 		ui->player2Display->show();
+		playerDisplay.insert(playerInfomation[0].first, ui->player2Display);
 	}
 
 	if (playerInfomation.size() > 1) {
@@ -60,7 +120,10 @@ void GameWindow::onEnterRoomSuccess(const QVector<QPair<quint64, QString>> &play
 		scoreLabel.insert(playerInfomation[1].first, ui->score3Label);
 		pictureLabel.insert(playerInfomation[1].first, ui->player3Picture);
 		gameCanvas->appendPlayer(playerInfomation[1].first, 2);
+		prepareLabel.insert(playerInfomation[1].first, ui->prepare3Label);
+		ui->prepare3Label->hide();
 		ui->player3Display->show();
+		playerDisplay.insert(playerInfomation[1].first, ui->player3Display);
 	}
 
 	if (playerInfomation.size() > 2) {
@@ -70,8 +133,107 @@ void GameWindow::onEnterRoomSuccess(const QVector<QPair<quint64, QString>> &play
 		scoreLabel.insert(playerInfomation[2].first, ui->score4Label);
 		pictureLabel.insert(playerInfomation[2].first, ui->player4Picture);
 		gameCanvas->appendPlayer(playerInfomation[2].first, 3);
+		prepareLabel.insert(playerInfomation[2].first, ui->prepare4Label);
+		ui->prepare4Label->hide();
 		ui->player4Display->show();
+		playerDisplay.insert(playerInfomation[2].first, ui->player4Display);
 	}
+}
+
+void GameWindow::onPlayerEnter(quint64 id, const QString &nickname)
+{
+	if (playerDisplay.size() == 0) {
+		ui->nickname2Label->setText(nickname);
+		ui->score2Label->setText("0");
+		nicknameLabel.insert(id, ui->nickname2Label);
+		scoreLabel.insert(id, ui->score2Label);
+		pictureLabel.insert(id, ui->player2Picture);
+		gameCanvas->appendPlayer(id, 1);
+		prepareLabel.insert(id, ui->prepare2Label);
+		ui->prepare2Label->hide();
+		ui->player2Display->show();
+		playerDisplay.insert(id, ui->player2Display);
+	}else if (playerDisplay.size() == 1) {
+		ui->nickname3Label->setText(nickname);
+		ui->score3Label->setText("0");
+		nicknameLabel.insert(id, ui->nickname3Label);
+		scoreLabel.insert(id, ui->score3Label);
+		pictureLabel.insert(id, ui->player3Picture);
+		gameCanvas->appendPlayer(id, 2);
+		prepareLabel.insert(id, ui->prepare3Label);
+		ui->prepare3Label->hide();
+		ui->player3Display->show();
+		playerDisplay.insert(id, ui->player3Display);
+	} else if (playerDisplay.size() == 2) {
+		ui->nickname4Label->setText(nickname);
+		ui->score4Label->setText("0");
+		nicknameLabel.insert(id, ui->nickname4Label);
+		scoreLabel.insert(id, ui->score4Label);
+		pictureLabel.insert(id, ui->player4Picture);
+		gameCanvas->appendPlayer(id, 3);
+		prepareLabel.insert(id, ui->prepare4Label);
+		ui->prepare4Label->hide();
+		ui->player4Display->show();
+		playerDisplay.insert(id, ui->player4Display);
+	}
+}
+
+void GameWindow::onPlayerExit(quint64 id)
+{
+	scoreLabel.remove(id);
+	nicknameLabel.remove(id);
+	pictureLabel.remove(id);
+	prepareLabel.remove(id);
+	playerDisplay[id]->hide();
+	playerDisplay.remove(id);
+	gameCanvas->removePlayer(id);
+}
+
+void GameWindow::onPrepare(quint64 id, quint64 selfId)
+{
+	if (id == selfId) {
+		ui->prepareButton->setText("取消准备");
+		ui->prepareButton->setStyleSheet("QPushButton {\n	color: rgb(255, 255, 255);\n	background-color: rgb(117, 117, 117);\n	border: 2px solid rgb(255, 255, 255);\n	border-radius: 15px;\n	padding: 20px 40px 20px 40px;\n}\nQPushButton:hover {\n	background-color: rgb(163, 163, 163);\n}\nQPushButton:pressed {\n	background-color: rgb(58, 58, 58);\n}");
+	}
+}
+
+void GameWindow::onGameBegin(const QVector<QVector<int>> &map, const QVector<QPair<quint64, QPoint>> &playerPosition)
+{
+	if (gameCanvas) {
+		gameCanvas->setPattern(map);
+		for (auto pair : playerPosition) {
+			gameCanvas->initializePlayer(pair.first, pair.second);
+		}
+	}
+	ui->prepareButton->hide();
+	ui->exitRoomButton->hide();
+	setFocus();
+}
+
+void GameWindow::onExitRoomButton()
+{
+	emit exitRoomRequest();
+}
+
+void GameWindow::onPrepareButton()
+{
+	emit prepareRequest();
+}
+
+void GameWindow::onExitRoomSuccess()
+{
+	scoreLabel.clear();
+	nicknameLabel.clear();
+	pictureLabel.clear();
+	prepareLabel.clear();
+	playerDisplay.clear();
+	delete gameCanvas;
+	emit exitRoomSuccess();
+}
+
+void GameWindow::onExitRoomFail(const QString &error)
+{
+	showError(error);
 }
 
 void GameWindow::onCreateRoomSuccess(quint64 rid, quint64 id, const QString &nickname)
@@ -95,4 +257,9 @@ void GameWindow::onCreateRoomSuccess(quint64 rid, quint64 id, const QString &nic
 	ui->player2Display->hide();
 	ui->player3Display->hide();
 	ui->player4Display->hide();
+}
+
+void GameWindow::showError(const QString &error) {
+	ui->errorLabel->setText(error);
+	errorShowTimer->start();
 }

@@ -5,6 +5,8 @@
 #include <qjsonarray.h>
 #include <qjsondocument.h>
 #include <qjsonvalue.h>
+#include <qpoint.h>
+#include "gamecanvas.h"
 
 #define SERVER_IP "127.0.0.1"
 #define SERVER_PORT 8080
@@ -67,6 +69,9 @@ public slots:
     void onRequireRoomRequest(int playerNumber); /* 响应获取房间信息请求 */
     void onSearchRoomRequest(quint64 rid); /* 响应查找房间请求 */
     void onEnterRoomRequest(quint64 rid); /* 响应进入房间请求 */
+    void onExitRoomRequest(); /* 响应离开房间请求 */
+    void onPrepareRequest(); /* 响应准备请求 */
+    void onMoveRequest(Direction direction); /* 请求移动 */
 
 private slots:
     void onRead(); /* 处理服务器消息 */
@@ -83,4 +88,14 @@ signals:
     void enterRoomSuccess(int playerLimit, int width, int height, int patternNumber, int time
         , const QVector<QPair<quint64, QString>> &playerInfomation); /* 成功进入房间 */
     void enterRoomFail(const QString &error); /* 进入房间失败 */
+    void exitRoomSuccess();
+    void exitRoomFail(const QString &error);
+    void playerEnter(quint64 id, const QString &nickname);
+    void playerExit(quint64 id);
+    void playerPrepare(quint64 id);
+    void gameBegin(const QVector<QVector<int>> &map, const QVector<QPair<quint64, QPoint>> &playerPosition);
+    void playerMove(quint64 id, Direction direction, bool flag);
+
+
+    void test(Direction direction);
 };

@@ -60,7 +60,8 @@ inline Direction opposite(Direction d) { return (Direction)(d < Down ? d + 2 : d
 inline QPoint neighbor(int x, int y, Direction d) { return d & 0x1 ? QPoint(x + d - 2, y) : QPoint(x, y + d - 1); }
 inline QPoint neighbor(const QPoint &p, Direction d) { return neighbor(p.x(), p.y(), d); }
 
-class Player {
+class Player
+{
 public:
     QPoint position; /* 玩家当前坐标 */
     int score; /* 玩家当前分数 */
@@ -68,7 +69,6 @@ public:
     int moveCoolDown; /* 移动冷却时间(ms) */
     QTimer *moveCoolDownTimer; /* 移动冷却 */
 
-    Player() {}
     Player(QPoint p);
     Player(int x, int y) : Player(QPoint(x, y)) {};
     ~Player() { delete moveCoolDownTimer; }
@@ -85,6 +85,7 @@ public:
         int time_,
         QObject *parent = nullptr
     );
+    ~Game();
 
     int getWidth() const { return block.size(); }
     int getHeight() const { return block.empty() ? 0 : block[0].size(); }
@@ -99,7 +100,7 @@ public slots:
 
 private:
     QVector<QVector<int>> block; /* 游戏方块图, block[x][y]即为坐标为(x, y)的方块, 涵盖整个地图包括四周墙壁 */
-    QMap<quint64 , Player> player; /* 用户id-玩家表 */
+    QMap<quint64 , Player *> player; /* 用户id-玩家表 */
     int patternNumber;
     int time;
     int &getBlock(const QPoint &p) { return block[p.x()][p.y()]; } /* 通过坐标获取方块引用 */

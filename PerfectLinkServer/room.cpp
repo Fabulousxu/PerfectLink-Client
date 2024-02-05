@@ -8,7 +8,7 @@
 #include <qjsonvalue.h>
 
 QMutex id_room_mutex;
-constexpr quint64 ID_MAX=9007199254740991;
+constexpr quint64 ID_MAX=3000;
 QMap<quint64, Room*> id_room_map;
 extern QMap<quint64, PlayerInfo*> id_player_map;
 Room * Room::add(
@@ -34,6 +34,7 @@ bool Room::remove(quint64 id)
     QMutexLocker locker(&id_room_mutex);
     auto pRoom=id_room_map.value(id);
     id_room_map.remove(id);
+    disconnect(pRoom, 0, 0, 0);
     pRoom->deleteLater();
     return true;
 }
@@ -142,6 +143,11 @@ void Room::removePlayer(PlayerSocket *player)
         });
         break;
     }
+    if (player_state_map.empty())
+    {
+        Room::remove(this->id);
+        return;
+    }
     emit tryInitGame(); //写在这，就是尽可能多的检查能不能启动游戏，防止之前卡了
 }
 
@@ -149,6 +155,7 @@ void Room::changePrepare(PlayerSocket *player, bool prepare)
 {
     if(!player_state_map.contains(player)) return;
     player_state_map[player]=prepare;
+    broadcast(Reply::PREPARE, { {"playerId", player->getIdString()} });
     QTimer::singleShot(200,this,[this](){
         emit tryInitGame();
     });
@@ -168,8 +175,8 @@ QJsonObject Room::getRoomInfo() const
     
     QJsonObject data;
     data.insert("playerLimit", playerLimit);
-    data.insert("width", game->getWidth());
-    data.insert("height", game->getHeight());
+    data.insert("width", game->getWidth() - SURROUNDING * 2);
+    data.insert("height", game->getHeight() - SURROUNDING * 2);
     data.insert("patternNumber", patternNumber);
     data.insert("time", time);
     data.insert("playerInfo", arr);
@@ -191,6 +198,7 @@ void Room::onTryInitGame()
     for (auto it = player_state_map.begin(); it != player_state_map.end(); ++it) {
         playerIdList.append(it.key()->getId());
     }
+    game->start(playerIdList);
 
     QJsonObject data;
     QJsonArray xArray, playerPos;
@@ -203,9 +211,9 @@ void Room::onTryInitGame()
     }
     for (auto it = game->getPlayer().begin(); it != game->getPlayer().end(); ++it) {
         QJsonObject pos;
-        pos.insert("x", it.value().position.x());
-        pos.insert("y", it.value().position.x());
-        pos.insert("id", QString::number(it.key()));
+        pos.insert("x", it.value()->position.x());
+        pos.insert("y", it.value()->position.y());
+        pos.insert("playerId", QString::number(it.key()));
         playerPos.append(pos);
     }
     data.insert("map", xArray);

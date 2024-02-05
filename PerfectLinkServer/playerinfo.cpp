@@ -13,10 +13,10 @@ PlayerInfo::PlayerInfo(const QString &nickName_, const QString &password_)
     :nickName(nickName_),password(password_){}
 quint64 PlayerInfo::add(const QString &nickName, const QString &password)
 {
-    //QMutexLocker locker(&id_player_mutex);
+    QMutexLocker locker(&id_player_mutex);
 
     auto id=0ull;
-    do id=QRandomGenerator().bounded(1ull, ID_MAX);
+    do id=QRandomGenerator::global()->bounded(1ull, ID_MAX);
     while(id_player_map.contains(id));
 
     qDebug()<<("注册账号" + QString::number(id));
@@ -58,7 +58,6 @@ bool PlayerInfo::load()
         return false;
     accountsJson = QJsonDocument::fromJson(file->readAll()).object();
     file->close();
-    QMutexLocker locker(&id_player_mutex);
     for (auto it = accountsJson.constBegin(); it != accountsJson.constEnd(); ++it) {
         auto id = it.key().toULongLong();
         auto nickname = it.value().toObject().value("nickname").toString();

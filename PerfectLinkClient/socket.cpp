@@ -1,5 +1,7 @@
 ﻿#include "socket.h"
 
+#define TEST 0
+
 Socket::Socket(QObject *parent)
 	: QTcpSocket(parent)
 {
@@ -21,8 +23,9 @@ void Socket::onSignupRequest(const QString &nickname, const QString &password) {
 	data.insert("password", password);
 	request(Request::Signup, data);
 
-	/* 以下测试用 */
-	//emit signupSuccess(10001);
+#if TEST
+	emit signupSuccess(1001);
+#endif
 }
 
 void Socket::onLoginRequest(quint64 id, const QString &password) {
@@ -31,8 +34,9 @@ void Socket::onLoginRequest(quint64 id, const QString &password) {
 	data.insert("password", password);
 	request(Request::Login, data);
 
-	/* 以下测试用 */
-	//emit loginSuccess("用户10001");
+#if TEST
+	emit loginSuccess("用户1001");
+#endif
 }
 
 void Socket::onLogoffRequest(quint64 id) {
@@ -41,9 +45,6 @@ void Socket::onLogoffRequest(quint64 id) {
 	//json.insert("request", Request::Logoff);
 	//json.insert("data", data);
 	//write(QJsonDocument(json).toJson());
-
-	/* 以下测试用 */
-	//emit logoffSuccess();
 }
 
 void Socket::onCreateRoomRequest(int playerNumber, int w, int h, int patternNumber, int time)
@@ -56,8 +57,9 @@ void Socket::onCreateRoomRequest(int playerNumber, int w, int h, int patternNumb
 	data.insert("time", time);
 	request(Request::CreateRoom, data);
 
-	/* 以下测试用 */
-	//emit createRoom(10001);
+#if TEST
+	emit createRoom(1234);
+#endif
 }
 
 void Socket::onRequireRoomRequest(int playerNumber)
@@ -66,12 +68,12 @@ void Socket::onRequireRoomRequest(int playerNumber)
 	data.insert("playerLimit", playerNumber);
 	request(Request::RequireRoom, data);
 
-	/* 以下测试用 */
+#if TEST
 	//QVector<QPair<quint64, int>> vec;
 	//vec.append(QPair<quint64, int>(1, 1));
 	//vec.append(QPair<quint64, int>(2, 1));
 	//vec.append(QPair<quint64, int>(3, 1));
-	//emit requireRoom(vec);
+#endif
 }
 
 void Socket::onSearchRoomRequest(quint64 rid)
@@ -83,7 +85,28 @@ void Socket::onEnterRoomRequest(quint64 rid)
 	QJsonObject data;
 	data.insert("roomId", QString::number(rid));
 	request(Request::EnterRoom, data);
+}
 
+void Socket::onExitRoomRequest()
+{
+	QJsonObject data;
+	request(Request::ExitRoom, data);
+}
+
+void Socket::onPrepareRequest() {
+	QJsonObject data;
+	request(Request::Prepare, data);
+}
+
+void Socket::onMoveRequest(Direction direction)
+{
+	QJsonObject data;
+	data.insert("direction", direction);
+	request(Request::Move, data);
+
+#if TEST
+	emit test(direction);
+#endif
 }
 
 void Socket::onRead() {
@@ -119,7 +142,7 @@ void Socket::onRead() {
 			QVector<QPair<quint64, int>> roomInfomation;
 			for (auto jsonValue : data.value("roomInfo").toArray()) {
 				auto room = jsonValue.toObject();
-				auto roomId = room.value("id").toString().toULongLong();
+				auto roomId = room.value("roomId").toString().toULongLong();
 				auto playerCount = room.value("playerCount").toInt();
 				roomInfomation.append(QPair<quint64, int>(roomId, playerCount));
 			}
@@ -145,6 +168,48 @@ void Socket::onRead() {
 				auto error = data.value("error").toString();
 				emit enterRoomFail(error);
 			}
+		} break;
+		case Reply::ExitRoom: {
+			auto flag = data.value("state").toBool();
+			if (flag) {
+				emit exitRoomSuccess();
+			} else { emit exitRoomFail(data.value("error").toString()); }
+		} break;
+		case Reply::Prepare: {
+			auto id = data.value("playerId").toString().toULongLong();
+			emit 
+
+
+		} break;
+		case Reply::PlayerChange: {
+			auto enter = data.value("enter").toBool();
+			auto id = data.value("playerId").toString().toULongLong();
+			if (enter) {
+				emit playerEnter(id, data.value("nickname").toString());
+			} else { emit playerExit(id); }
+		} break;
+		case Reply::Begin: {
+			QVector<QVector<int>> map;
+			QVector<QPair<quint64, QPoint>> playerPosition;
+			for (auto xValue : data.value("map").toArray()) {
+				QVector<int> xMap;
+				for (auto yValue : xValue.toArray()) { xMap.append(yValue.toInt()); }
+				map.append(xMap);
+			}
+			for (auto jsonValue : data.value("playerPos").toArray()) {
+				auto player = jsonValue.toObject();
+				auto x = player.value("x").toInt();
+				auto y = player.value("y").toInt();
+				auto id = player.value("playerId").toString().toULongLong();
+				playerPosition.append(QPair<quint64, QPoint>(id, QPoint(x, y)));
+			}
+			emit gameBegin(map, playerPosition);
+		} break;
+		case Reply::Move: {
+			auto playerId = data.value("playerId").toString().toULongLong();
+			auto direction = (Direction)data.value("direction").toInt();
+			auto state = data.value("state").toBool();
+			emit playerMove(playerId, direction, state);
 		} break;
 	}
 }
