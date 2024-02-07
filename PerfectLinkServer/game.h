@@ -115,7 +115,7 @@ private:
 signals:
     void showMovePlayer(quint64 id, bool flag, Direction d); /* 显示指定玩家移动, 给定是否改变位置以及移动方向 */
     void showSelectBlock(quint64 id, const QPoint &p); /* 显示指定方块被选中 */
-    void showUnselectBlock(quint64 id, const QPoint &p); /* 显示指定方块取消选中 */
+    void showUnselectBlock(const QPoint &p); /* 显示指定方块取消选中 */
     void showMatchPath(quint64 id, const QVector<QPoint> &path); /* 显示匹配路径 */
     void showScoreChanged(quint64 id, int score); /* 显示分数改变 */
 };

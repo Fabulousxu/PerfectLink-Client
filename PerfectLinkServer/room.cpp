@@ -23,7 +23,11 @@ Room * Room::add(
     quint64 id=0;
     do id=QRandomGenerator::global()->bounded(1ull, ID_MAX);
     while(id_room_map.contains(id));
-    auto res=new Room(host, id, playerLimit, height, width, patternNumber, time, PlayerSocket::userTable);
+    auto res=new Room(
+        host,id,
+        playerLimit, height, width, patternNumber, time,
+        PlayerSocket::stateDisplay
+    );
     id_room_map.insert(id, res);
     return res;
 }
@@ -93,9 +97,18 @@ void Room::addPlayer(PlayerSocket *player)
     );
     connect(game, &Game::showSelectBlock, player, [player](quint64 id, const QPoint &p) {
         QJsonObject data;
+        data.insert("state", true);
         data.insert("x", p.x());
         data.insert("y", p.y());
         data.insert("playerId", QString::number(id));
+        player->reply(Reply::SELECT, data);
+        }
+    );
+    connect(game, &Game::showUnselectBlock, player, [player](const QPoint &p) {
+        QJsonObject data;
+        data.insert("state", false);
+        data.insert("x", p.x());
+        data.insert("y", p.y());
         player->reply(Reply::SELECT, data);
         }
     );
@@ -129,7 +142,7 @@ void Room::addPlayer(PlayerSocket *player)
     player_state_map.insert(player, false);
 }
 
-void Room::removePlayer(PlayerSocket *player)
+void Room::removePlayer(PlayerSocket *player, bool needBroadcast)
 {
     foreach(auto pPlayer, player_state_map.keys()){
         if(pPlayer!=player) continue;
@@ -137,10 +150,12 @@ void Room::removePlayer(PlayerSocket *player)
         disconnect(this, 0, player, 0);
         disconnect(player, 0, game, 0);
         disconnect(game, 0, player, 0);
-        broadcast(Reply::PLAYER_CHANGE,{
-            {"enter",false},
-            {"playerId",player->getIdString()}
-        });
+        if(needBroadcast){
+            broadcast(Reply::PLAYER_CHANGE,{
+                {"enter",false},
+                {"playerId",player->getIdString()}
+            });
+        }
         break;
     }
     if (player_state_map.empty())
@@ -169,7 +184,8 @@ QJsonObject Room::getRoomInfo() const
         auto nickname=id_player_map.value(id)->getNickName();
         arr.append(QJsonObject{
             {"id", pPlayer->getIdString()},
-            {"nickname",nickname}
+            {"nickname",nickname},
+            {"prepare", pPlayer->isPrepare()}
         });
     }
     
@@ -185,12 +201,15 @@ QJsonObject Room::getRoomInfo() const
 
 void Room::broadcast(Reply::EType replyCode, const QJsonObject &data) const
 {
+    if(player_state_map.empty()) return;
     foreach(auto player, player_state_map.keys())
         player->reply(replyCode, data);
 }
 
 void Room::onTryInitGame()
 {
+    if(player_state_map.size()<playerLimit)
+        return;
     foreach(auto prepare, player_state_map)
         if(!prepare) return;
 

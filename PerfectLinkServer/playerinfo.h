@@ -15,6 +15,15 @@ if(run_only_once_helper)\
 return refuseRetVal;\
 run_only_once_helper=true;
 
+enum class PasswordSecurity:quint8
+{
+    SAFE,
+    SHORT,
+    LONG,
+    SIMPLE,
+    WRONG_CHAR
+};
+
 class PlayerInfo
 {
     const QString nickName;
@@ -40,6 +49,12 @@ public:
      * @return 载入是否成功
      */
     static bool load();
+    /**
+     * @brief 判断客户输入密码的安全性
+     * @param password 客户输入的密码
+     * @return 安全性状态代码
+     */
+    static PasswordSecurity getPasswordSecurity(const QString &password);
 
     /**
      * @brief 获取玩家昵称

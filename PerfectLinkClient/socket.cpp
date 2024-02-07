@@ -111,9 +111,8 @@ void Socket::onMoveRequest(Direction direction)
 
 void Socket::onRead() {
 	auto json = QJsonDocument::fromJson(readAll()).object();
-
-	qDebug() << json;
-
+	flush();
+	qDebug() << "receive: [[\n" << json << "\n]]";
 	Reply::Type reply = (Reply::Type)json.value("reply").toInt();
 	auto data = json.value("data").toObject();
 	switch (reply) {
@@ -156,12 +155,15 @@ void Socket::onRead() {
 				auto playerLimit = data.value("playerLimit").toInt();
 				auto patternNumber = data.value("patternNumber").toInt();
 				auto time = data.value("time").toInt();
-				QVector<QPair<quint64, QString>> playerInfomation;
+				QVector<QPair<quint64, QPair<QString, bool>>> playerInfomation;
 				for (auto jsonValue : data.value("playerInfo").toArray()) {
 					auto player = jsonValue.toObject();
 					auto id = player.value("id").toString().toULongLong();
 					auto nickname = player.value("nickname").toString();
-					playerInfomation.append(QPair<quint64, QString>(id, nickname));
+					auto prepare = player.value("prepare").toBool();
+					playerInfomation.append(
+						QPair<quint64, QPair<QString, bool>>(id, QPair<QString, bool>(nickname, prepare))
+					);
 				}
 				emit enterRoomSuccess(playerLimit, width, height, patternNumber, time, playerInfomation);
 			} else { 
@@ -210,6 +212,30 @@ void Socket::onRead() {
 			auto direction = (Direction)data.value("direction").toInt();
 			auto state = data.value("state").toBool();
 			emit playerMove(playerId, direction, state);
+		} break;
+		case Reply::Select: {
+			auto flag = data.value("state").toBool();
+			auto x = data.value("x").toInt();
+			auto y = data.value("y").toInt();
+			if (flag) {
+				auto id = data.value("playerId").toString().toULongLong();
+				emit selectBlock(QPoint(x, y), id);
+			} else { emit unSelectBlock(QPoint(x, y)); }
+		} break;
+		case Reply::Path: {
+			QVector<QPoint> path;
+			for (auto jsonValue : data.value("path").toArray()) {
+				auto p = jsonValue.toObject();
+				auto x = p.value("x").toInt();
+				auto y = p.value("y").toInt();
+				path.append(QPoint(x, y));
+			}
+			emit drawPath(path);
+		} break;
+		case Reply::Mark: {
+			auto id = data.value("playerId").toString().toULongLong();
+			auto score = data.value("score").toInt();
+			emit mark(id, score);
 		} break;
 	}
 }

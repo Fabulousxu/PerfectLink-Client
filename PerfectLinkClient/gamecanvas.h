@@ -10,7 +10,7 @@
 #define WALL_WIDTH 1 /* 外圈墙格数 */
 #define SURROUNDING 3 /* 外圈墙和地板格数 */
 #define MATCHING 700 /* 匹配消除时间ms */
-#define MOVE_TIME 200 /* 人物移动动画时间ms */
+#define MOVE_TIME 180 /* 人物移动动画时间ms */
 #define REFRESH_TIME 10 /* 人物移动每帧时间ms */ 
 
 enum Direction { Up, Left, Down, Right };
@@ -40,12 +40,36 @@ private:
 	static QPixmap *picture;
 };
 
+class Select : public Cell {
+	Q_OBJECT
+public:
+	Select(int x, int y, int pt, QWidget *parent);
+	Select(QPoint p, int pt, QWidget *parent) : Select(p.x(), p.y(), pt, parent) {}
+	void paintEvent(QPaintEvent *event) override;
+	void setPattern(int pt);
+	static void loadPicture();
+private:
+	int pattern;
+	static QPixmap *picture;
+};
+
+class Path : public QWidget {
+	Q_OBJECT
+public:
+	Path(int w, int h, QWidget *parent);
+	void paintEvent(QPaintEvent *event) override;
+	void drawPath(const QVector<QPoint> &path);
+private:
+	QVector<QPoint> path;
+};
+
 class Player : public Cell {
 	Q_OBJECT
 public:
 	Player(int x, int y, int pt, QWidget *parent);
 	Player(QPoint p, int pt, QWidget *parent) : Player(p.x(), p.y(), pt, parent) {}
 	QPoint getPosition() { return position; }
+	int getPattern() { return pattern; }
 	void setPosition(int x, int y);
 	void setPosition(QPoint p) { setPosition(p.x(), p.y()); }
 	void setDirection(Direction d);
@@ -72,7 +96,11 @@ public:
 	void removePlayer(quint64 id); /* 当有玩家退出房间时使用该方法 */
 	void movePlayer(quint64 id, Direction d, bool flag); /* 移动玩家 */
 	void initializePlayer(quint64 id, QPoint p); /* 用于游戏开始时设置玩家初始位置 */
+	void selectBlock(QPoint p, quint64 id); /* 某人选中一个方块 */
+	void unSelectBlock(QPoint p); /* 取消选中方块 */
+	void drawPath(const QVector<QPoint> &path);
 private:
 	QVector<QVector<Block *>> block;
 	QMap<quint64, Player *> player; /* 上限4人 */
+	QVector<QVector<Select *>> select;
 };

@@ -1,5 +1,7 @@
 ﻿#include "gamecanvas.h"
 
+#define MATCH_TIME 700 /* 方块匹配消除显示时间700ms */
+
 Cell::Cell(int x, int y, QWidget *parent) : QWidget(parent) {
 	setParent(parent);
 	setFixedSize(size, size);
@@ -52,6 +54,33 @@ void Block::loadPicture() {
 }
 
 QPixmap *Block::picture = nullptr;
+
+Select::Select(int x, int y, int pt, QWidget *parent)
+	: Cell(x, y, parent)
+	, pattern(pt)
+{}
+
+QPixmap *Select::picture = nullptr;
+
+void Select::setPattern(int pt) {
+	pattern = pt;
+	update();
+}
+
+void Select::paintEvent(QPaintEvent *event)
+{
+	QPainter *p = new QPainter(this);
+	p->drawPixmap(0, 0, width(), height(), picture[pattern]);
+	delete p;
+}
+
+void Select::loadPicture()
+{
+	picture = new QPixmap[7];
+	for (int i = 0; i < 7; ++i) {
+		picture[i].load(":/MainWindow/image/select" + QString::number(i + 1) + ".png");
+	}
+}
 
 Player::Player(int x, int y, int pt, QWidget *parent) : Cell(x, y, parent) {
 	pattern = pt;
@@ -126,8 +155,40 @@ void Player::loadPicture() {
 
 QPixmap *Player::picture = nullptr;
 
+
+Path::Path(int w, int h, QWidget *parent)
+	: QWidget(parent)
+{
+	setParent(parent);
+	setFixedSize(w * Cell::size, h * Cell::size);
+	move(0.5 * Cell::size, 0.5 * Cell::size);
+	show();
+}
+
+void Path::paintEvent(QPaintEvent *event)
+{
+	QPainter *p = new QPainter(this);
+	p->setPen(QPen(QColor(
+		QRandomGenerator::global()->bounded(0, 256),
+		QRandomGenerator::global()->bounded(0, 256),
+		QRandomGenerator::global()->bounded(0, 256)
+	), 4));
+	for (auto it = path.begin(); it != path.end() - 1; ++it) {
+		p->drawLine(*it * Cell::size, *(it + 1) * Cell::size);
+	}
+	delete p;
+}
+
+void Path::drawPath(const QVector<QPoint> &path)
+{
+	this->path = path;
+	update();
+}
+
+
 GameCanvas::GameCanvas(int w, int h, QWidget *parent) : QWidget(parent) {
 	block = QVector<QVector<Block *>>(w + SURROUNDING * 2, QVector<Block *>(h + SURROUNDING * 2, nullptr));
+	select = QVector<QVector<Select *>>(w + SURROUNDING * 2, QVector<Select *>(h + SURROUNDING * 2, nullptr));
 	setParent(parent);
 	Cell::size = qMin(parent->height() * 0.8 / mapHeight(), parent->width() * 0.6 / mapWidth());
 	setFixedSize(Cell::size * mapWidth(), Cell::size * mapHeight());
@@ -190,4 +251,40 @@ void GameCanvas::initializePlayer(quint64 id, QPoint p) {
 		it.value()->setPosition(p);
 		it.value()->setDirection(Down);
 	}
+}
+
+void GameCanvas::selectBlock(QPoint p, quint64 id) {
+	auto &pSelect = select[p.x()][p.y()];
+	if (pSelect) {
+		pSelect->setPattern(player[id]->getPattern());
+		pSelect->show();
+	} else {
+		pSelect = new Select(p, player[id]->getPattern(), this);
+	}
+}
+
+void GameCanvas::unSelectBlock(QPoint p)
+{
+	auto &pSelect = select[p.x()][p.y()];
+	if (pSelect) {
+		pSelect->hide();
+	}
+}
+
+void GameCanvas::drawPath(const QVector<QPoint> &path)
+{
+	Path *pathShow = new Path(mapWidth(), mapHeight(), this);
+	pathShow->drawPath(path);
+	auto p1 = path.front();
+	auto p2 = path.back();
+	QTimer::singleShot(MATCH_TIME, [pathShow, this, p1, p2] {
+		delete pathShow;
+		delete select[p1.x()][p1.y()];
+		delete select[p2.x()][p2.y()];
+		select[p1.x()][p1.y()] = nullptr;
+		select[p2.x()][p2.y()] = nullptr;
+		block[p1.x()][p1.y()]->setPattern(0);
+		block[p2.x()][p2.y()]->setPattern(0);
+		}
+	);
 }

@@ -35,5 +35,12 @@
         <file>image/player7_left.png</file>
         <file>image/player7_right.png</file>
         <file>image/player7_up.png</file>
+        <file>image/select1.png</file>
+        <file>image/select2.png</file>
+        <file>image/select3.png</file>
+        <file>image/select4.png</file>
+        <file>image/select5.png</file>
+        <file>image/select6.png</file>
+        <file>image/select7.png</file>
     </qresource>
 </RCC>

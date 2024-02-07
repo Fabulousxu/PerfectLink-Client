@@ -60,7 +60,6 @@ public:
 
 private:
 
-
 public slots:
     void onSignupRequest(const QString &nickname, const QString &password); /* 响应注册请求 */
     void onLoginRequest(quint64 id, const QString &password); /* 响应登录请求 */
@@ -86,7 +85,7 @@ signals:
     void createRoom(quint64 rid); /* 成功创建房间 */
     void requireRoom(const QVector<QPair<quint64, int>> &roomInfomation); /* 成功获取房间信息 */
     void enterRoomSuccess(int playerLimit, int width, int height, int patternNumber, int time
-        , const QVector<QPair<quint64, QString>> &playerInfomation); /* 成功进入房间 */
+        , const QVector<QPair<quint64, QPair<QString, bool>>> &playerInfomation); /* 成功进入房间 */
     void enterRoomFail(const QString &error); /* 进入房间失败 */
     void exitRoomSuccess();
     void exitRoomFail(const QString &error);
@@ -95,7 +94,8 @@ signals:
     void playerPrepare(quint64 id);
     void gameBegin(const QVector<QVector<int>> &map, const QVector<QPair<quint64, QPoint>> &playerPosition);
     void playerMove(quint64 id, Direction direction, bool flag);
-
-
-    void test(Direction direction);
+    void selectBlock(const QPoint &p, quint64 id);
+    void unSelectBlock(const QPoint &p);
+    void drawPath(const QVector<QPoint> &path);
+    void mark(quint64 id, int score);
 };

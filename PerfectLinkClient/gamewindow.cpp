@@ -25,6 +25,18 @@ GameWindow::GameWindow(QWidget *parent)
 	connect(errorShowTimer, &QTimer::timeout, this, [this] { ui->errorLabel->clear(); });
 	connect(ui->exitRoomButton, &QPushButton::clicked, this, &GameWindow::onExitRoomButton);
 	connect(ui->prepareButton, &QPushButton::clicked, this, &GameWindow::onPrepareButton);
+	
+	countdownTimer = new QTimer(this);
+	countdownTimer->setInterval(20);
+	connect(countdownTimer, &QTimer::timeout, this, [this] {
+		if (countdown > 0) {
+			countdown -= 20;
+			ui->timeInnerRect->resize((ui->timeOuterRect->width() - 6) * countdown * 0.001 / time
+				, ui->timeInnerRect->height());
+			ui->countdownLabel->setText(QString::number(countdown / 1000));
+		}
+		}
+	);
 }
 
 void GameWindow::setParameter(int playerLimit, int w, int h, int patternNumber, int time)
@@ -34,6 +46,8 @@ void GameWindow::setParameter(int playerLimit, int w, int h, int patternNumber, 
 	height = h;
 	this->patternNumber = patternNumber;
 	this->time = time;
+	countdown = time * 1000;
+	ui->countdownLabel->setText(QString::number(time));
 }
 
 void GameWindow::keyPressEvent(QKeyEvent *event)
@@ -77,7 +91,7 @@ void GameWindow::keyReleaseEvent(QKeyEvent *event)
 	}
 }
 
-void GameWindow::onEnterRoomSuccess(const QVector<QPair<quint64, QString>> &playerInfomation
+void GameWindow::onEnterRoomSuccess(const QVector<QPair<quint64, QPair<QString, bool>>> &playerInfomation
 	, quint64 rid, quint64 id, const QString &nickname)
 {
 	gameCanvas = new GameCanvas(width, height, this);
@@ -101,40 +115,47 @@ void GameWindow::onEnterRoomSuccess(const QVector<QPair<quint64, QString>> &play
 	ui->player4Display->hide();
 
 	if (playerInfomation.size() > 0) {
-		ui->nickname2Label->setText(playerInfomation[0].second);
+		ui->nickname2Label->setText(playerInfomation[0].second.first);
 		ui->score2Label->setText("0");
 		nicknameLabel.insert(playerInfomation[0].first, ui->nickname2Label);
 		scoreLabel.insert(playerInfomation[0].first, ui->score2Label);
 		pictureLabel.insert(playerInfomation[0].first, ui->player2Picture);
 		gameCanvas->appendPlayer(playerInfomation[0].first, 1);
 		prepareLabel.insert(playerInfomation[0].first, ui->prepare2Label);
+		if (playerInfomation[0].second.second) {
+			ui->prepare2Label->show();
+		} else { ui->prepare2Label->hide(); }
 		ui->prepare2Label->hide();
 		ui->player2Display->show();
 		playerDisplay.insert(playerInfomation[0].first, ui->player2Display);
 	}
 
 	if (playerInfomation.size() > 1) {
-		ui->nickname3Label->setText(playerInfomation[1].second);
+		ui->nickname3Label->setText(playerInfomation[1].second.first);
 		ui->score3Label->setText("0");
 		nicknameLabel.insert(playerInfomation[1].first, ui->nickname3Label);
 		scoreLabel.insert(playerInfomation[1].first, ui->score3Label);
 		pictureLabel.insert(playerInfomation[1].first, ui->player3Picture);
 		gameCanvas->appendPlayer(playerInfomation[1].first, 2);
 		prepareLabel.insert(playerInfomation[1].first, ui->prepare3Label);
-		ui->prepare3Label->hide();
+		if (playerInfomation[0].second.second) {
+			ui->prepare3Label->show();
+		} else { ui->prepare3Label->hide(); }
 		ui->player3Display->show();
 		playerDisplay.insert(playerInfomation[1].first, ui->player3Display);
 	}
 
 	if (playerInfomation.size() > 2) {
-		ui->nickname4Label->setText(playerInfomation[2].second);
+		ui->nickname4Label->setText(playerInfomation[2].second.first);
 		ui->score4Label->setText("0");
 		nicknameLabel.insert(playerInfomation[2].first, ui->nickname4Label);
 		scoreLabel.insert(playerInfomation[2].first, ui->score4Label);
 		pictureLabel.insert(playerInfomation[2].first, ui->player4Picture);
 		gameCanvas->appendPlayer(playerInfomation[2].first, 3);
 		prepareLabel.insert(playerInfomation[2].first, ui->prepare4Label);
-		ui->prepare4Label->hide();
+		if (playerInfomation[0].second.second) {
+			ui->prepare4Label->show();
+		} else { ui->prepare4Label->hide(); }
 		ui->player4Display->show();
 		playerDisplay.insert(playerInfomation[2].first, ui->player4Display);
 	}
@@ -207,7 +228,13 @@ void GameWindow::onGameBegin(const QVector<QVector<int>> &map, const QVector<QPa
 	}
 	ui->prepareButton->hide();
 	ui->exitRoomButton->hide();
+	countdownTimer->start();
 	setFocus();
+}
+
+void GameWindow::onMark(quint64 id, int score)
+{
+	scoreLabel[id]->setText(QString::number(score));
 }
 
 void GameWindow::onExitRoomButton()

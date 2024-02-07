@@ -8,10 +8,12 @@ namespace Reply
 #define ErrDef(errorName, errorString) constexpr char (errorName)[]=(errorString)
 ErrDef(ID_ERROR, "ID doesn\'t exist");
 ErrDef(PASSWORD_ERROR, "Wrong password");
-ErrDef(PASSWORD_UNSAFE, "Password Unsafe");
+ErrDef(PASSWORD_SHORT, "Password is too short");
+ErrDef(PASSWORD_LONG, "Password is too long");
+ErrDef(PASSWORD_SIMPLE, "Password should contains more than 2 kinds of letters, numbers and underline");
+ErrDef(PASSWORD_WRONG_CHAR,"Password should be composed of English letters, numbers and underline");
 ErrDef(ROOM_ERROR, "Room doesn\'t exist");
 ErrDef(ROOM_FULL, "Too many players in room");
-ErrDef(ROOM_START, "No entering because the game has begun");
 ErrDef(SYNC_ERROR, "Bad network");
 #undef ErrDef
 }
@@ -89,7 +91,7 @@ void PlayerSocket::setPlayerState(EState state_)
 void PlayerSocket::onRead()
 {
     auto jsonMsg=requestInterpreter(socket->readAll());
-
+    socket->flush();
     qDebug() << "receive from <" << socket->peerAddress() << ':' << socket->peerPort()
         << ">[[\n" << jsonMsg << "\n]]";
 
@@ -139,21 +141,66 @@ void PlayerSocket::onRead()
 
 void PlayerSocket::onDisconnect()//断连槽函数
 {
-    //TODO 没想好2024.2.1，可能是退出登录
-
-    disconnect(this, 0, this, 0);
+    switch(state)
+    {
+    case GAMING:
+        //TODO 游戏中强行退出，需要在哪操作？
+        break;
+    case PREPARE:
+    case IN_ROOM:
+        gamingRoom->removePlayer(this);
+        gamingRoom=nullptr;
+        break;
+    case ONLINE:
+    case OFFLINE:
+        break;
+    default:
+        stateDisplay->insertHtml(
+            "User <b>"+socket->peerAddress().toString()
+            +":"+QString::number(socket->peerPort())
+            +"</b> log out error"
+        );
+        break;
+    }
+    disconnect(this,0,0,0);
+    state=OFFLINE;
+    id=0;
+    stateDisplay->insertHtml(
+        "User <b>"+socket->peerAddress().toString()
+        +":"+QString::number(socket->peerPort())
+        +"</b> Out"
+    );
     this->deleteLater();
 }
 
 void PlayerSocket::onRegister(const QString &nickname, const QString &password)
 {
     if(state!=OFFLINE) return; //有id就不能继续注册咯
-    //TODO: 检查安全性？
-    auto id=PlayerInfo::add(nickname, password);
-    reply(Reply::REGISTER, QJsonObject{
-        {"state",true},
-        {"id", QString::number(id)}
-    });
+    QJsonObject data{{"state",false}};
+    switch(PlayerInfo::getPasswordSecurity(password))
+    {
+    case PasswordSecurity::LONG:
+        data.insert("error", Reply::PASSWORD_LONG);
+        break;
+    case PasswordSecurity::SHORT:
+        data.insert("error", Reply::PASSWORD_SHORT);
+        break;
+    case PasswordSecurity::SIMPLE:
+        data.insert("error", Reply::PASSWORD_SIMPLE);
+        break;
+    case PasswordSecurity::WRONG_CHAR:
+        data.insert("error", Reply::PASSWORD_WRONG_CHAR);
+        break;
+    case PasswordSecurity::SAFE:{
+        auto id=PlayerInfo::add(nickname, password);
+        data["state"]=true;
+        data.insert("id",QString::number(id));
+    } break;
+    default:
+        reply(Reply::ERROR,{{"error","Unexpected error"}});
+        return;
+    }
+    reply(Reply::REGISTER, data);
 }
 
 void PlayerSocket::onLogOff(quint64 id)
@@ -165,7 +212,7 @@ void PlayerSocket::onLogOff(quint64 id)
     });
     else reply(Reply::LOGOFF, {{"state",true}});
     this->id=0;
-    setPlayerState(OFFLINE);
+    state=OFFLINE;
 }
 
 void PlayerSocket::onLogIn(quint64 id, const QString &password)
@@ -182,7 +229,6 @@ void PlayerSocket::onLogIn(quint64 id, const QString &password)
             {"nickname",id_player_map.value(id)->getNickName()}
         });
         this->id=id;
-        //setPlayerState(ONLINE);
         state = ONLINE;
     }
 }

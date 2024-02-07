@@ -1,6 +1,7 @@
 #include "game.h"
 #include <qmutex.h>
 #include <qdebug.h>
+#include <qeventloop.h>
 
 #define SCORE_SINGLE 20 //单次得分20
 QMutex game_mutex;
@@ -9,7 +10,7 @@ Player::Player(QPoint p)
     : position(p) {
     score = 0;
     select = nullptr;
-    moveCoolDown = 300;
+    moveCoolDown = 250;
     moveCoolDownTimer = new QTimer();
     moveCoolDownTimer->setInterval(moveCoolDown);
     moveCoolDownTimer->setSingleShot(true);
@@ -216,22 +217,39 @@ void Game::select(quint64 id, const QPoint &p) {
     for (auto it = this->player.begin(); it != this->player.end(); ++it)
     {
         if (it.key() == id) { continue; }
-        if ((*it)->select) { delete (*it)->select; (*it)->select = nullptr; }
+        if ((*it)->select && *(*it)->select == p) {
+            delete (*it)->select;
+            (*it)->select = nullptr;
+        }
     }
     emit showSelectBlock(id, p);
+    /* 以下防止粘包 */
+    QEventLoop loop;
+    QTimer::singleShot(20, [&loop] { loop.quit(); });
+    loop.exec();
+    /* *********** */
     if (player->select) {
         auto oldSelect = *player->select;
         auto path = match(oldSelect, p);
         if (path.empty()) {
-            emit showUnselectBlock(id, *player->select);
+            emit showUnselectBlock(*player->select);
             *player->select = p;
             return;
         } else {
             player->score += SCORE_SINGLE;
             emit showMatchPath(id, path);
+            /* 以下防止粘包 */
+            QEventLoop loop1;
+            QTimer::singleShot(20, [&loop1] { loop1.quit(); });
+            loop1.exec();
+            /* *********** */
             emit showScoreChanged(id, player->score);
-            delete player->select; player->select = nullptr;
+            delete player->select; 
+            player->select = nullptr;
             QTimer::singleShot(MATCH_TIME, [=] { getBlock(oldSelect) = getBlock(p) = 0; });
         }
-    } else { player->select = new QPoint(p); return; }
+    } else { 
+        player->select = new QPoint(p); 
+        return; 
+    }
 }

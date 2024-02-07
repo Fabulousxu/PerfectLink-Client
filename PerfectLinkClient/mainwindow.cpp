@@ -73,9 +73,14 @@ MainWindow::MainWindow(QWidget *parent)
     connect(socket, &Socket::gameBegin, gameWindow, &GameWindow::onGameBegin);
     connect(gameWindow, &GameWindow::moveRequest, socket, &Socket::onMoveRequest);
     connect(socket, &Socket::playerMove
-        , this, [this](quint64 id, Direction d, bool flag) { gameWindow->gameCanvas->movePlayer(id, d, flag); });
-    //connect(socket, &Socket::test
-    //    , this, [this](Direction d) { gameWindow->gameCanvas->movePlayer(accountInfomation.id, d, true); });
+        , gameWindow, [this](quint64 id, Direction d, bool flag) { gameWindow->gameCanvas->movePlayer(id, d, flag); });
+    connect(socket, &Socket::selectBlock
+        , gameWindow, [this](const QPoint &p, quint64 id) { gameWindow->gameCanvas->selectBlock(p, id); });
+    connect(socket, &Socket::unSelectBlock
+        , gameWindow, [this](const QPoint &p) { gameWindow->gameCanvas->unSelectBlock(p); });
+    connect(socket, &Socket::drawPath
+        , gameWindow, [this](const QVector<QPoint> &path) { gameWindow->gameCanvas->drawPath(path); });
+    connect(socket, &Socket::mark, gameWindow, &GameWindow::onMark);
 
     socket->connectToHost(SERVER_IP, SERVER_PORT);
 
@@ -108,7 +113,7 @@ void MainWindow::onCreateRoomSuccess(quint64 rid)
 }
 
 void MainWindow::onEnterRoomSuccess(int playerLimit, int width, int height, int patternNumber, int time
-    , const QVector<QPair<quint64, QString>> &playerInfomation)
+    , const QVector<QPair<quint64, QPair<QString, bool>>> &playerInfomation)
 {
     homeWindow->roomInfomationWindow->onEnterRoomSuccess();
     homeWindow->roomInfomationWindow->hide();

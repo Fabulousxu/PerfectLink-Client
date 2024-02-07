@@ -40,8 +40,9 @@ public:
     /**
      * @brief 移除房间内的玩家
      * @param player 移除的玩家socket
+     * @param needBroadcast 需要广播与否
      */
-    void removePlayer(PlayerSocket *player);
+    void removePlayer(PlayerSocket *player, bool needBroadcast=true);
     /**
      * @brief 玩家准备状态改变
      * @param player 玩家

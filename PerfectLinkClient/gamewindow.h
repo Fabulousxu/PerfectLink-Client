@@ -18,7 +18,6 @@ class GameWindow : public QWidget
 public:
 	GameCanvas *gameCanvas;
 
-
 	GameWindow(QWidget *parent = nullptr);
 	~GameWindow() { delete ui; }
 
@@ -42,12 +41,14 @@ private:
 	QMap<quint64, QLabel *> prepareLabel;
 	QMap<quint64, QWidget *> playerDisplay;
 	QMap<quint64, bool> prepareState;
+	int countdown;
+	QTimer *countdownTimer;
 
 	void showError(const QString &error); /* 显示错误信息 */
 
 public slots:
 	void onCreateRoomSuccess(quint64 rid, quint64 id, const QString &nickname);
-	void onEnterRoomSuccess(const QVector<QPair<quint64, QString>> &playerInfomation
+	void onEnterRoomSuccess(const QVector<QPair<quint64, QPair<QString, bool>>> &playerInfomation
 		, quint64 rid, quint64 id, const QString &nickname);
 	void onExitRoomSuccess();
 	void onExitRoomFail(const QString &error);
@@ -55,6 +56,7 @@ public slots:
 	void onPlayerExit(quint64 id);
 	void onPrepare(quint64 id, quint64 selfId);
 	void onGameBegin(const QVector<QVector<int>> &map, const QVector<QPair<quint64, QPoint>> &playerPosition);
+	void onMark(quint64 id, int score);
 
 private slots:
 	void onExitRoomButton();

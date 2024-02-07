@@ -68,3 +68,26 @@ bool PlayerInfo::load()
     return true;
 }
 
+PasswordSecurity PlayerInfo::getPasswordSecurity(const QString &password)
+{
+    auto len=password.size();
+    if(len<6)
+        return PasswordSecurity::SHORT;
+    if(len>26)
+        return PasswordSecurity::LONG;
+    int hasABC=0, hasNumber=0, hasUnderline=0;
+    for(auto c:password)
+    {
+        if((c>='a'&&c<='z')||(c>='A'&&c<='Z'))
+            hasABC=1;
+        else if(c>='0'&&c<='9')
+            hasNumber=1;
+        else if(c=='_')
+            hasUnderline=1;
+        else
+            return PasswordSecurity::WRONG_CHAR;
+    }
+    if(hasABC+hasNumber+hasUnderline<2)
+        return PasswordSecurity::SIMPLE;
+    return PasswordSecurity::SAFE;
+}
