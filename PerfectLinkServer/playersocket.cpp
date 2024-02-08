@@ -3,6 +3,42 @@
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QRandomGenerator>
+
+
+bool isLittleEndian() {
+    int num = 0x1;
+    return *(char *)(&num);
+}
+
+bool isBigEndian() { return !isLittleEndian(); }
+quint32 fromBigEndian(const QByteArray &numBytes) {
+    quint32 numInt;
+    auto numChar=numBytes.data();
+    if (isBigEndian()) {
+        numInt = *(int *)(numChar);
+    } else {
+        *(char *)&numInt = numChar[3];
+        *((char *)&numInt + 1) = numChar[2];
+        *((char *)&numInt + 2) = numChar[1];
+        *((char *)&numInt + 3) = numChar[0];
+    }
+    return numInt;
+}
+
+QByteArray toBigEndian(quint32 num) {
+    char numChar[5];
+    if (isBigEndian()) {
+        *(int *)numChar = num;
+    } else {
+        numChar[0] = *((char *)&num + 3);
+        numChar[1] = *((char *)&num + 2);
+        numChar[2] = *((char *)&num + 1);
+        numChar[3] = *(char *)&num;
+    }
+    numChar[4] = '\0';
+    return QByteArray(numChar, 4);
+}
+
 namespace Reply
 {
 #define ErrDef(errorName, errorString) constexpr char (errorName)[]=(errorString)
@@ -11,7 +47,7 @@ ErrDef(PASSWORD_ERROR, "Wrong password");
 ErrDef(PASSWORD_SHORT, "Password is too short");
 ErrDef(PASSWORD_LONG, "Password is too long");
 ErrDef(PASSWORD_SIMPLE, "Password should contains more than 2 kinds of letters, numbers and underline");
-ErrDef(PASSWORD_WRONG_CHAR,"Password should be composed of English letters, numbers and underline");
+ErrDef(PASSWORD_WRONG_CHAR, "Password should be composed of English letters, numbers and underline");
 ErrDef(ROOM_ERROR, "Room doesn\'t exist");
 ErrDef(ROOM_FULL, "Too many players in room");
 ErrDef(SYNC_ERROR, "Bad network");
@@ -44,10 +80,11 @@ void PlayerSocket::setWidget(QTableWidget *userTable_,QTextBrowser *stateDisplay
     if(!userTable) userTable=userTable_;
     if(!stateDisplay) stateDisplay=stateDisplay_;
 }
-QJsonObject PlayerSocket::requestInterpreter(QByteArray bytesMsg)
+QJsonObject PlayerSocket::readRequest()
 {
-    auto doc=QJsonDocument::fromJson(bytesMsg);
-    return doc.object();
+    quint32 length=fromBigEndian(socket->read(4));//TODO 大小端
+    QByteArray bytes=socket->read(length);
+    return QJsonDocument::fromJson(bytes).object();
 }
 void PlayerSocket::reply(Reply::EType replyCode, const QJsonObject &data)
 {
@@ -55,12 +92,14 @@ void PlayerSocket::reply(Reply::EType replyCode, const QJsonObject &data)
         {"reply",replyCode},
         {"data",data},
     });
-    
-    qDebug() << "send to<" << socket->peerAddress() << ':' << socket->peerPort()
-        << ">:[[\n" << msg << "\n]]";
+    auto bytes=QJsonDocument(msg).toJson();
+    quint32 length=bytes.length();
+    //TODO 整数to Bytes
 
-    socket->write(QJsonDocument(msg).toJson());
-    socket->flush();
+    //qDebug() << "send to<" << socket->peerAddress() << ':' << socket->peerPort()
+    //    << ">:[[\n" << msg << "\n]]";
+    qDebug() << "send bytes:\n\t" << toBigEndian(length) + bytes << "\nsend json:\n\t" << msg << "\n\n";
+    socket->write(toBigEndian(length) + bytes);
 }
 void PlayerSocket::setPlayerState(EState state_)
 {
@@ -90,51 +129,54 @@ void PlayerSocket::setPlayerState(EState state_)
 }
 void PlayerSocket::onRead()
 {
-    auto jsonMsg=requestInterpreter(socket->readAll());
-    socket->flush();
-    qDebug() << "receive from <" << socket->peerAddress() << ':' << socket->peerPort()
-        << ">[[\n" << jsonMsg << "\n]]";
+    while(socket->bytesAvailable()>=4){
+        auto jsonMsg=readRequest();
 
-    int requestCode=jsonMsg.value("request").toInt();
-    QJsonObject data=jsonMsg.value("data").toObject({});
-    switch(requestCode){
-    case Request::REGISTER:
-        onRegister(data.value("nickname").toString(),data.value("password").toString());
-        break;
-    case Request::LOGOFF:
-        onLogOff(data.value("id").toString().toULongLong());
-        break;
-    case Request::LOGIN:
-        onLogIn(data.value("id").toString().toULongLong(),data.value("password").toString());
-        break;
-    case Request::CREATE_ROOM :
-        onCreateRoom(
-            data.value("playerLimit").toInt(),
-            data.value("height").toInt(),
-            data.value("width").toInt(),
-            data.value("patternNumber").toInt(),
-            data.value("time").toInt()
-        );
-        break;
-    case Request::REQUIRE_ROOMS :
-        onRequireRooms(data.value("playerLimit").toInt());
-        break;
-    case Request::ENTER_ROOM:
-        onEnterRoom(data.value("roomId").toString().toULongLong());
-        break;
-    case Request::EXIT_ROOM:
-        onExitRoom();
-        break;
-    case Request::PREPARE:
-        onPrepare();
-        break;
-    case Request::MOVE:
-        onMove(data.value("direction").toInt());
-        break;
-    default:
-        reply(Reply::ERROR, QJsonObject({
-            {"error", "Wrong request code<"+QString::number(requestCode)+">"}
-        }));
+        qDebug() << "receive from <" << socket->peerAddress() << ':' << socket->peerPort()
+                 << ">[[\n" << jsonMsg << "\n]]";
+
+        int requestCode=jsonMsg.value("request").toInt();
+        QJsonObject data=jsonMsg.value("data").toObject({});
+        switch(requestCode){
+        case Request::REGISTER:
+            onRegister(data.value("nickname").toString(),data.value("password").toString());
+            break;
+        case Request::LOGOFF:
+            onLogOff(data.value("id").toString().toULongLong());
+            break;
+        case Request::LOGIN:
+            onLogIn(data.value("id").toString().toULongLong(),data.value("password").toString());
+            break;
+        case Request::CREATE_ROOM :
+            onCreateRoom(
+                data.value("playerLimit").toInt(),
+                data.value("height").toInt(),
+                data.value("width").toInt(),
+                data.value("patternNumber").toInt(),
+                data.value("time").toInt()
+                );
+            break;
+        case Request::REQUIRE_ROOMS :
+            onRequireRooms(data.value("playerLimit").toInt());
+            break;
+        case Request::ENTER_ROOM:
+            onEnterRoom(data.value("roomId").toString().toULongLong());
+            break;
+        case Request::EXIT_ROOM:
+            onExitRoom();
+            break;
+        case Request::PREPARE:
+            onPrepare();
+            break;
+        case Request::MOVE:
+            onMove(data.value("direction").toInt());
+            break;
+        default:
+            reply(
+                Reply::ERROR,
+                {{"error", "Wrong request code<"+QString::number(requestCode)+">"}}
+            );
+        }
     }
 }
 
@@ -158,7 +200,7 @@ void PlayerSocket::onDisconnect()//断连槽函数
         stateDisplay->insertHtml(
             "User <b>"+socket->peerAddress().toString()
             +":"+QString::number(socket->peerPort())
-            +"</b> log out error"
+            +"</b> log out error <br>"
         );
         break;
     }
@@ -166,9 +208,9 @@ void PlayerSocket::onDisconnect()//断连槽函数
     state=OFFLINE;
     id=0;
     stateDisplay->insertHtml(
-        "User <b>"+socket->peerAddress().toString()
-        +":"+QString::number(socket->peerPort())
-        +"</b> Out"
+        "User <b>" + socket->peerAddress().toString()
+        + ":" + QString::number(socket->peerPort())
+        + "</b> Out <br>"
     );
     this->deleteLater();
 }

@@ -166,8 +166,8 @@ QVector<QPoint> Game::matchTurn(const QPoint &a, const QPoint &b) {
 
 QVector<QPoint> Game::matchTurn2(const QPoint &a, const QPoint &b) {
     QVector<QPoint> path, tmp;
-    auto width=getWidth();
-    auto height=getHeight();
+    auto width = getWidth();
+    auto height = getHeight();
     int pos[2] = { 0 }, flag = true, length, minLength = (width + height) * 2;
     auto leftA = a.x() - 1, rightA = a.x() + 1, upA = a.y() - 1, downA = a.y() + 1;
     auto leftB = b.x() - 1, rightB = b.x() + 1, upB = a.y() - 1, downB = a.x() + 1;
@@ -237,11 +237,11 @@ void Game::select(quint64 id, const QPoint &p) {
         }
     }
     emit showSelectBlock(id, p);
-    /* 以下防止粘包 */
-    QEventLoop loop;
-    QTimer::singleShot(20, [&loop] { loop.quit(); });
-    loop.exec();
-    /* *********** */
+    ///* 以下防止粘包 */
+    //QEventLoop loop;
+    //QTimer::singleShot(180, [&loop] { loop.quit(); });
+    //loop.exec();
+    ///* *********** */
     if (player->select) {
         auto oldSelect = *player->select;
         auto path = match(oldSelect, p);
@@ -252,11 +252,11 @@ void Game::select(quint64 id, const QPoint &p) {
         } else {
             player->score += SCORE_SINGLE;
             emit showMatchPath(id, path);
-            /* 以下防止粘包 */
-            QEventLoop loop1;
-            QTimer::singleShot(20, [&loop1] { loop1.quit(); });
-            loop1.exec();
-            /* *********** */
+            ///* 以下防止粘包 */
+            //QEventLoop loop1;
+            //QTimer::singleShot(180, [&loop1] { loop1.quit(); });
+            //loop1.exec();
+            ///* *********** */
             emit showScoreChanged(id, player->score);
             delete player->select; 
             player->select = nullptr;

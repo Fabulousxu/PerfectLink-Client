@@ -2,7 +2,6 @@
 #define PLAYERSOCKET_H
 #pragma once
 #include <QTcpSocket>
-#include <QJsonObject>
 #include <QComboBox>
 #include <QTextBrowser>
 #include <QTableWidget>
@@ -42,11 +41,10 @@ public:
      */
     static void setWidget(QTableWidget *userTable_, QTextBrowser *stateDisplay_);
     /**
-     * @brief 将收到的信息变成Json
-     * @param bytesMsg 收到的二进制信息
+     * @brief 读取信息并将收到的信息变成Json
      * @return 一个JSON对象
      */
-    static QJsonObject requestInterpreter(QByteArray bytesMsg);
+    QJsonObject readRequest();
 
     /**
      * @brief 回复给客户一条消息

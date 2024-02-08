@@ -3,8 +3,7 @@
 #include "playerinfo.h"
 
 //TODO: Address? Port?
-QHostAddress addr("127.0.0.1");
-#define SERVER_PORT 8080
+#define SERVER_PORT 11080
 
 MainWindow::MainWindow(QWidget *parent)
     : QWidget(parent)
@@ -15,7 +14,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     PlayerInfo::load();
     PlayerSocket::setWidget(ui->userTable,ui->stateDisplay);
-    server->listen(addr, 8080);
+    server->listen(QHostAddress::Any, SERVER_PORT);
     connect(server,&QTcpServer::newConnection, this, &MainWindow::onNewConnection);
 }
 

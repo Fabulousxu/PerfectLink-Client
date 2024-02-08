@@ -47,7 +47,7 @@
         <widget class="QComboBox" name="portBox">
          <item>
           <property name="text">
-           <string>8000</string>
+           <string>11080</string>
           </property>
          </item>
         </widget>

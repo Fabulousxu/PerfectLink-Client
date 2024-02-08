@@ -149,5 +149,5 @@ void MainWindow::onGameEnd(const QVector<QPair<QString, int>> &rank, int self)
 void MainWindow::onBackToHomeFromEnd()
 {
     endWindow->hide();
-    homeWindow->hide();
+    homeWindow->show();
 }
