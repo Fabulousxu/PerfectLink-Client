@@ -33,6 +33,19 @@ Game::Game(
         pattern.append((pos + i) % 32 + 1);
     }
     initializeBlock(height_, width_, pattern);
+
+    countdown = time;
+    countdownTimer = new QTimer(this);
+    countdownTimer->setInterval(1000);
+    connect(countdownTimer, &QTimer::timeout, this, [this] {
+        if (countdown > 0) {
+            --countdown;
+        } else {
+            countdownTimer->stop();
+            emit gameEnd(getRank());
+        }
+        }
+    );
 }
 Game::~Game()
 {
@@ -85,6 +98,7 @@ void Game::start(QList<quint64> playerIds)
             }
         }
     }
+    QTimer::singleShot(300, [this] { countdownTimer->start(); });
 }
 
 void Game::onMove(quint64 id, Direction d) {
@@ -252,4 +266,17 @@ void Game::select(quint64 id, const QPoint &p) {
         player->select = new QPoint(p); 
         return; 
     }
+}
+
+QVector<QPair<quint64, int>> Game::getRank()
+{
+    QVector<QPair<quint64, int>> rank;
+    for (auto it = player.begin(); it != player.end(); ++it) {
+        rank.append(QPair<quint64, int>(it.key(), it.value()->score));
+    }
+    std::sort(rank.begin(), rank.end(), [](QPair<quint64, int> l, QPair<quint64, int> r) {
+        return l.second < r.second;
+        }
+    );
+    return rank;
 }

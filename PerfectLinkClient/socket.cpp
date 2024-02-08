@@ -237,5 +237,15 @@ void Socket::onRead() {
 			auto score = data.value("score").toInt();
 			emit mark(id, score);
 		} break;
+		case Reply::End: {
+			QVector<QPair<quint64, int>> rank;
+			for (auto jsonValue : data.value("rank").toArray()) {
+				auto p = jsonValue.toObject();
+				auto playerId = p.value("playerId").toString().toULongLong();
+				auto score = p.value("score").toInt();
+				rank.append(QPair<quint64, int>(playerId, score));
+			}
+			emit gameEnd(rank);
+		} break;
 	}
 }

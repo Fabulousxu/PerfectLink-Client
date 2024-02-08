@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QWidget>
+#include <qlabel.h>
 #include "ui_endwindow.h"
 
 QT_BEGIN_NAMESPACE
@@ -13,8 +14,21 @@ class EndWindow : public QWidget
 
 public:
 	EndWindow(QWidget *parent = nullptr);
-	~EndWindow();
+	~EndWindow() { delete ui; }
 
 private:
 	Ui::EndWindowClass *ui;
+	QVector<QWidget *> rankDisplay;
+	QVector<QLabel *> selfLabel;
+	QVector<QLabel *> nicknameLabel;
+	QVector<QLabel *> scoreLabel;
+
+public slots:
+	void onGameEnd(const QVector<QPair<QString, int>> &rank, int self);
+
+private slots:
+	void onBackButton();
+
+signals:
+	void backToHome();
 };

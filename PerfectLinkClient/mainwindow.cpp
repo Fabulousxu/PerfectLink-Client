@@ -6,13 +6,15 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     //showFullScreen();
-    resize(960, 540);
+    resize(1280, 720);
     socket = new Socket(this);
     startWindow = new StartWindow(this);
     homeWindow = new HomeWindow(this);
     gameWindow = new GameWindow(this);
+    endWindow = new EndWindow(this);
     homeWindow->hide();
     gameWindow->hide();
+    endWindow->hide();
 
     accountInfomation.id = 10001;
     accountInfomation.nickname = "东川路徐先生";
@@ -82,8 +84,16 @@ MainWindow::MainWindow(QWidget *parent)
         , gameWindow, [this](const QVector<QPoint> &path) { gameWindow->gameCanvas->drawPath(path); });
     connect(socket, &Socket::mark, gameWindow, &GameWindow::onMark);
 
-    socket->connectToHost(SERVER_IP, SERVER_PORT);
+    /* 游戏结束处理 */
+    connect(socket, &Socket::gameEnd
+        , gameWindow, [this](const QVector<QPair<quint64, int>> &rank) {
+            gameWindow->onGameEnd(rank, accountInfomation.id);
+        }
+    );
+    connect(gameWindow, &GameWindow::gameEnd, this, &MainWindow::onGameEnd);
+    connect(endWindow, &EndWindow::backToHome, this, &MainWindow::onBackToHomeFromEnd);
 
+    socket->connectToHost(SERVER_IP, SERVER_PORT);
     startWindow->show();
     //homeWindow->show();
     //gameWindow->show();
@@ -127,4 +137,17 @@ void MainWindow::onExitRoomSuccess()
 {
     gameWindow->hide();
     homeWindow->show();
+}
+
+void MainWindow::onGameEnd(const QVector<QPair<QString, int>> &rank, int self)
+{
+    gameWindow->hide();
+    endWindow->onGameEnd(rank, self);
+    endWindow->show();
+}
+
+void MainWindow::onBackToHomeFromEnd()
+{
+    endWindow->hide();
+    homeWindow->hide();
 }

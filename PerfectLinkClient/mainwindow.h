@@ -5,6 +5,7 @@
 #include "startwindow.h"
 #include "homewindow.h"
 #include "gamewindow.h"
+#include "endwindow.h"
 #include "socket.h"
 
 QT_BEGIN_NAMESPACE
@@ -25,6 +26,7 @@ private:
     StartWindow *startWindow;
     HomeWindow *homeWindow;
     GameWindow *gameWindow;
+    EndWindow *endWindow;
     struct AccountInfomation {
         quint64 id;
         QString nickname;
@@ -38,4 +40,6 @@ public slots:
     void onEnterRoomSuccess(int playerLimit, int width, int height, int patternNumber, int time
         , const QVector<QPair<quint64, QPair<QString, bool>>> &playerInfomation); /* 进入房间成功 */
     void onExitRoomSuccess(); /* 离开房间成功 */
+    void onGameEnd(const QVector<QPair<QString, int>> &rank, int self); /* 游戏结束 */
+    void onBackToHomeFromEnd();
 };

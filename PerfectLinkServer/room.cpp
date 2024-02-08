@@ -132,6 +132,7 @@ void Room::addPlayer(PlayerSocket *player)
         player->reply(Reply::MARK, data);
         }
     );
+    connect(game, &Game::gameEnd, player, &PlayerSocket::onGameEnd);
 
     auto id=player->getId();
     broadcast(Reply::PLAYER_CHANGE,{
@@ -163,7 +164,9 @@ void Room::removePlayer(PlayerSocket *player, bool needBroadcast)
         Room::remove(this->id);
         return;
     }
-    emit tryInitGame(); //写在这，就是尽可能多的检查能不能启动游戏，防止之前卡了
+    if (needBroadcast) {
+        emit tryInitGame(); //写在这，就是尽可能多的检查能不能启动游戏，防止之前卡了
+    }
 }
 
 void Room::changePrepare(PlayerSocket *player, bool prepare)

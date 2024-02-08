@@ -237,6 +237,19 @@ void GameWindow::onMark(quint64 id, int score)
 	scoreLabel[id]->setText(QString::number(score));
 }
 
+void GameWindow::onGameEnd(const QVector<QPair<quint64, int>> &rank, quint64 id)
+{
+	delete gameCanvas;
+	gameCanvas = nullptr;
+	QVector<QPair<QString, int>> gameRank;
+	int self;
+	for (int i = 0; i < rank.size(); ++i) {
+		gameRank.append({ nicknameLabel[rank[i].first]->text(), rank[i].second });
+		if (rank[i].first == id) { self = i + 1; }
+	}
+	emit gameEnd(gameRank, self);
+}
+
 void GameWindow::onExitRoomButton()
 {
 	emit exitRoomRequest();

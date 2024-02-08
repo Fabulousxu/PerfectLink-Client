@@ -103,14 +103,17 @@ private:
     QMap<quint64 , Player *> player; /* 用户id-玩家表 */
     int patternNumber;
     int time;
+    QTimer *countdownTimer; /* 游戏倒计时定时器 */
+    int countdown; /* 游戏倒计时 */
     int &getBlock(const QPoint &p) { return block[p.x()][p.y()]; } /* 通过坐标获取方块引用 */
 
     QVector<QPoint> match(const QPoint &a, const QPoint &b); /* 判断两个方块是否能匹配, 返回匹配路径(不能匹配为空) */
     QVector<QPoint> matchLine(const QPoint &a, const QPoint &b); /* 直线匹配 */
     QVector<QPoint> matchTurn(const QPoint &a, const QPoint &b); /* 一次转弯匹配 */
     QVector<QPoint> matchTurn2(const QPoint &a, const QPoint &b); /* 二次转弯匹配 */
-
     void select(quint64 id, const QPoint &p); /* 某玩家选中某位置的方块 */
+
+    QVector<QPair<quint64, int>> getRank(); /* 获取比分排名, 在游戏结束时使用 */
 
 signals:
     void showMovePlayer(quint64 id, bool flag, Direction d); /* 显示指定玩家移动, 给定是否改变位置以及移动方向 */
@@ -118,4 +121,5 @@ signals:
     void showUnselectBlock(const QPoint &p); /* 显示指定方块取消选中 */
     void showMatchPath(quint64 id, const QVector<QPoint> &path); /* 显示匹配路径 */
     void showScoreChanged(quint64 id, int score); /* 显示分数改变 */
+    void gameEnd(const QVector<QPair<quint64, int>> &rank); /* 游戏结束 */
 };

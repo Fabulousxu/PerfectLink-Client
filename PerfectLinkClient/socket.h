@@ -98,4 +98,5 @@ signals:
     void unSelectBlock(const QPoint &p);
     void drawPath(const QVector<QPoint> &path);
     void mark(quint64 id, int score);
+    void gameEnd(const QVector<QPair<quint64, int>> &rank);
 };

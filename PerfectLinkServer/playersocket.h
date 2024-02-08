@@ -129,6 +129,7 @@ private slots:
     void onDisconnect(); //链接断开
 public slots:
     void onGameBegin(const QJsonObject &data);
+    void onGameEnd(const QVector<QPair<quint64, int>> &rank);
 signals:
     void move(quint64 id, Direction direction);
 };

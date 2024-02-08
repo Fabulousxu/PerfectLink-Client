@@ -173,6 +173,22 @@ void PlayerSocket::onDisconnect()//断连槽函数
     this->deleteLater();
 }
 
+void PlayerSocket::onGameEnd(const QVector<QPair<quint64, int>> &rank)
+{
+    QJsonObject data;
+    QJsonArray rankJson;
+    for (auto it = rank.begin(); it != rank.end(); ++it) {
+        rankJson.append(QJsonObject({
+            { "playerId", QString::number(it->first) },
+            { "score", it->second }
+            }));
+    }
+    data.insert("rank", rankJson);
+    state = ONLINE;
+    gamingRoom->removePlayer(this, false);
+    reply(Reply::END_GAME, data);
+}
+
 void PlayerSocket::onRegister(const QString &nickname, const QString &password)
 {
     if(state!=OFFLINE) return; //有id就不能继续注册咯
