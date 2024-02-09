@@ -178,7 +178,7 @@ QWidget#rankWidget {
         </property>
         <item>
          <widget class="QWidget" name="rank1Display" native="true">
-          <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,0,0,0,0">
            <property name="spacing">
             <number>50</number>
            </property>
@@ -194,6 +194,19 @@ QWidget#rankWidget {
            <property name="bottomMargin">
             <number>0</number>
            </property>
+           <item>
+            <spacer name="horizontalSpacer_7">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>0</width>
+               <height>0</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
            <item>
             <widget class="QLabel" name="self1Label">
              <property name="sizePolicy">
@@ -347,7 +360,7 @@ QWidget#rankWidget {
         </item>
         <item>
          <widget class="QWidget" name="rank2Display" native="true">
-          <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="1,0,0,0,0">
            <property name="spacing">
             <number>50</number>
            </property>
@@ -363,6 +376,19 @@ QWidget#rankWidget {
            <property name="bottomMargin">
             <number>0</number>
            </property>
+           <item>
+            <spacer name="horizontalSpacer_8">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>0</width>
+               <height>0</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
            <item>
             <widget class="QLabel" name="self2Label">
              <property name="sizePolicy">
@@ -516,7 +542,7 @@ QWidget#rankWidget {
         </item>
         <item>
          <widget class="QWidget" name="rank3Display" native="true">
-          <layout class="QHBoxLayout" name="horizontalLayout_4">
+          <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="1,0,0,0,0">
            <property name="spacing">
             <number>50</number>
            </property>
@@ -532,6 +558,19 @@ QWidget#rankWidget {
            <property name="bottomMargin">
             <number>0</number>
            </property>
+           <item>
+            <spacer name="horizontalSpacer_9">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>0</width>
+               <height>0</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
            <item>
             <widget class="QLabel" name="self3Label">
              <property name="sizePolicy">
@@ -685,7 +724,7 @@ QWidget#rankWidget {
         </item>
         <item>
          <widget class="QWidget" name="rank4Display" native="true">
-          <layout class="QHBoxLayout" name="horizontalLayout_5">
+          <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="1,0,0,0,0">
            <property name="spacing">
             <number>50</number>
            </property>
@@ -701,6 +740,19 @@ QWidget#rankWidget {
            <property name="bottomMargin">
             <number>0</number>
            </property>
+           <item>
+            <spacer name="horizontalSpacer_10">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>0</width>
+               <height>0</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
            <item>
             <widget class="QLabel" name="self4Label">
              <property name="sizePolicy">

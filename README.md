@@ -134,10 +134,16 @@
 ``` Json
     "data": {
         "state": true,
+        "playerLimit": 2, //3, 4
+        "height": 6, //from 1 to 20
+        "width": 6, //from 1 to 20
+        "patternNumber": 8, //from 1 to 32
+        "time": 90 //from 10 to 9999
         "playerInfo": [
             {
                 "id": "id",
-                "nickname": "nickname"
+                "nickname": "nickname",
+                "prepare": true
             }
             //...
         ] //playerInfomation是房间其他人的信息
@@ -173,6 +179,7 @@
 - 客户端向服务器
 ``` Json
     "data": {
+        
     }
 ```
 - 服务器向客户端群发
@@ -206,6 +213,14 @@
             [0, 1, 2, ]
             //...
             //先x后y的方块
+        ],
+        "playerPos": [
+            {
+                "x": 1,
+                "y": 1,
+                "playerId": "id"
+            },
+            //...
         ]
     }
 ```
@@ -227,11 +242,21 @@
 ```
 #### 选中方块 reply = 11
 - 服务器向客户端群发
+1. 选中
 ``` Json
     "data": {
+        "state": true,
         "x": 0,
         "y": 0,
         "playerId": "id" //方块选中者
+    }
+```
+2. 取消选中
+``` Json
+    "data": {
+        "state": false,
+        "x": 0,
+        "y": 0
     }
 ```
 #### 绘制路径 reply = 12
@@ -259,6 +284,13 @@
 - 服务器向客户端群发 
 ``` Json
     "data": {
+        "rank": [
+            {
+                "playerId": "id",
+                "score": 100
+            }
+            //...
+        ]
     }
 ```
 ### 未知错误 reply = -1

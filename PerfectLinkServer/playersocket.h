@@ -110,8 +110,9 @@ private:
     void onExitRoom();
     /**
      * @brief 玩家准备响应
+     * @param flag 准备/取消准备
      */
-    void onPrepare();
+    void onPrepare(bool flag);
     /**
      * @brief 玩家移动响应
      * @param direction 移动方向

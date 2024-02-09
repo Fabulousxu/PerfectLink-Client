@@ -145,6 +145,7 @@ void CreateRoomWindow::setLevel(int l)
 
 void CreateRoomWindow::onCreateRoomSuccess(quint64 rid)
 {
+	ui->errorLabel->clear();
 	ui->heightInput->setReadOnly(false);
 	ui->widthInput->setReadOnly(false);
 	ui->patternNumberInput->setReadOnly(false);

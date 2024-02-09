@@ -166,7 +166,7 @@ void PlayerSocket::onRead()
             onExitRoom();
             break;
         case Request::PREPARE:
-            onPrepare();
+            onPrepare(data.value("prepare").toBool());
             break;
         case Request::MOVE:
             onMove(data.value("direction").toInt());
@@ -352,11 +352,11 @@ void PlayerSocket::onExitRoom() //这里是申请退出房间
     gamingRoom=nullptr;
 }
 
-void PlayerSocket::onPrepare()
+void PlayerSocket::onPrepare(bool flag)
 {
-    if(state!=IN_ROOM || (!gamingRoom)) return;
-    gamingRoom->changePrepare(this, true);
-    state=PREPARE;
+    if ((state == IN_ROOM && !flag) || (state == PREPARE && flag) || (!gamingRoom)) return;
+    state = flag ? PREPARE : IN_ROOM;
+    gamingRoom->changePrepare(this, flag);
 }
 
 void PlayerSocket::onMove(int direction)

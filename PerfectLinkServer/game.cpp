@@ -10,7 +10,7 @@ Player::Player(QPoint p)
     : position(p) {
     score = 0;
     select = nullptr;
-    moveCoolDown = 250;
+    moveCoolDown = 320;
     moveCoolDownTimer = new QTimer();
     moveCoolDownTimer->setInterval(moveCoolDown);
     moveCoolDownTimer->setSingleShot(true);
@@ -170,7 +170,7 @@ QVector<QPoint> Game::matchTurn2(const QPoint &a, const QPoint &b) {
     auto height = getHeight();
     int pos[2] = { 0 }, flag = true, length, minLength = (width + height) * 2;
     auto leftA = a.x() - 1, rightA = a.x() + 1, upA = a.y() - 1, downA = a.y() + 1;
-    auto leftB = b.x() - 1, rightB = b.x() + 1, upB = a.y() - 1, downB = a.x() + 1;
+    auto leftB = b.x() - 1, rightB = b.x() + 1, upB = b.y() - 1, downB = b.y() + 1;
     while (leftA >= SURROUNDING - 1 && isFloor(block[leftA][a.y()])) { --leftA; } ++leftA;
     while (rightA <= width - SURROUNDING && isFloor(block[rightA][a.y()])) { ++rightA; } --rightA;
     while (upA >= SURROUNDING - 1 && isFloor(block[a.x()][upA])) { --upA; } ++upA;
@@ -194,7 +194,7 @@ QVector<QPoint> Game::matchTurn2(const QPoint &a, const QPoint &b) {
         if (y == a.y() || y == b.y()) { continue; }
         if (b.x() > a.x()) {
             for (auto x = a.x() + 1; x < b.x(); ++x) { if (!isFloor(block[x][y])) { flag = false; break; } }
-        } else { for (auto x = a.x() - 1; y > b.x(); --x) { if (!isFloor(block[x][y])) { flag = false; break; } } }
+        } else { for (auto x = a.x() - 1; x > b.x(); --x) { if (!isFloor(block[x][y])) { flag = false; break; } } }
         if (flag && (length = qAbs(a.y() - y) + qAbs(b.y() - y)) + qAbs(a.x() - b.x()) < minLength) {
             pos[0] = 2; pos[1] = y;
             minLength = length;
@@ -275,7 +275,7 @@ QVector<QPair<quint64, int>> Game::getRank()
         rank.append(QPair<quint64, int>(it.key(), it.value()->score));
     }
     std::sort(rank.begin(), rank.end(), [](QPair<quint64, int> l, QPair<quint64, int> r) {
-        return l.second < r.second;
+        return l.second > r.second;
         }
     );
     return rank;

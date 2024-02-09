@@ -1,4 +1,4 @@
-#include "endwindow.h"
+﻿#include "endwindow.h"
 
 EndWindow::EndWindow(QWidget *parent)
 	: QWidget(parent)

@@ -50,8 +50,6 @@ void Socket::request(Request::Type request, const QJsonObject &data)
 	json.insert("data", data);
 	QByteArray bytes = QJsonDocument(json).toJson();
 	quint32 length = bytes.length();
-
-	qDebug() << "send bytes:\n\t" << toBigEndian(length) + bytes << "\nsend json:\n\t" << json << "\n\n";
 	write(toBigEndian(length) + bytes);
 	//flush();
 }
@@ -132,8 +130,9 @@ void Socket::onExitRoomRequest()
 	request(Request::ExitRoom, data);
 }
 
-void Socket::onPrepareRequest() {
+void Socket::onPrepareRequest(bool prepare) {
 	QJsonObject data;
+	data.insert("prepare", prepare);
 	request(Request::Prepare, data);
 }
 
@@ -153,8 +152,8 @@ void Socket::onRead() {
 		quint32 length = fromBigEndian(read(4)); //TODO 大小端
 		QByteArray bytes = read(length);
 		auto json = QJsonDocument::fromJson(bytes).object();
-		qDebug() << "receive: [[\n\t" << bytes << "\n]]";
 
+		qDebug() << "receive: [[\n\t" << json << "\n]]";
 
 		Reply::Type reply = (Reply::Type)json.value("reply").toInt();
 		auto data = json.value("data").toObject();
@@ -222,9 +221,8 @@ void Socket::onRead() {
 			} break;
 			case Reply::Prepare: {
 				auto id = data.value("playerId").toString().toULongLong();
-				emit
-
-
+				auto prepare = data.value("prepare").toBool();
+				emit playerPrepare(id, prepare);
 			} break;
 			case Reply::PlayerChange: {
 				auto enter = data.value("enter").toBool();

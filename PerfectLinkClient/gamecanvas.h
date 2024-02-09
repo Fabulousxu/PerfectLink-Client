@@ -10,8 +10,8 @@
 #define WALL_WIDTH 1 /* 外圈墙格数 */
 #define SURROUNDING 3 /* 外圈墙和地板格数 */
 #define MATCHING 700 /* 匹配消除时间ms */
-#define MOVE_TIME 180 /* 人物移动动画时间ms */
-#define REFRESH_TIME 10 /* 人物移动每帧时间ms */ 
+#define MOVE_TIME 240 /* 人物移动动画时间ms */
+#define REFRESH_TIME 20 /* 人物移动每帧时间ms */ 
 
 enum Direction { Up, Left, Down, Right };
 inline QPoint directionPoint(Direction d) { return d & 1 ? QPoint(d - 2, 0) : QPoint(0, d - 1); }

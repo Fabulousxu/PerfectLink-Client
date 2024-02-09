@@ -8,8 +8,12 @@
 #include <qpoint.h>
 #include "gamecanvas.h"
 
+#define DEBUG 0
+#if DEBUG
+#define SERVER_IP "127.0.0.1"
+#else
 #define SERVER_IP "116.204.99.157"
-//#define SERVER_IP "127.0.0.1"
+#endif
 #define SERVER_PORT 11080
 
 namespace Reply {
@@ -70,7 +74,7 @@ public slots:
     void onSearchRoomRequest(quint64 rid); /* 响应查找房间请求 */
     void onEnterRoomRequest(quint64 rid); /* 响应进入房间请求 */
     void onExitRoomRequest(); /* 响应离开房间请求 */
-    void onPrepareRequest(); /* 响应准备请求 */
+    void onPrepareRequest(bool prepare); /* 响应准备请求 */
     void onMoveRequest(Direction direction); /* 请求移动 */
 
 private slots:
@@ -92,7 +96,7 @@ signals:
     void exitRoomFail(const QString &error);
     void playerEnter(quint64 id, const QString &nickname);
     void playerExit(quint64 id);
-    void playerPrepare(quint64 id);
+    void playerPrepare(quint64 id, bool flag);
     void gameBegin(const QVector<QVector<int>> &map, const QVector<QPair<quint64, QPoint>> &playerPosition);
     void playerMove(quint64 id, Direction direction, bool flag);
     void selectBlock(const QPoint &p, quint64 id);

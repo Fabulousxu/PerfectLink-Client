@@ -173,7 +173,7 @@ void Room::changePrepare(PlayerSocket *player, bool prepare)
 {
     if(!player_state_map.contains(player)) return;
     player_state_map[player]=prepare;
-    broadcast(Reply::PREPARE, { {"playerId", player->getIdString()} });
+    broadcast(Reply::PREPARE, { {"playerId", player->getIdString()}, {"prepare", prepare} });
     QTimer::singleShot(200,this,[this](){
         emit tryInitGame();
     });

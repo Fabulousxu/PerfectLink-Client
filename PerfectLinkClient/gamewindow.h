@@ -40,7 +40,7 @@ private:
 	QMap<quint64, QLabel *> pictureLabel;
 	QMap<quint64, QLabel *> prepareLabel;
 	QMap<quint64, QWidget *> playerDisplay;
-	QMap<quint64, bool> prepareState;
+	int isPrepare;
 	int countdown;
 	QTimer *countdownTimer;
 
@@ -54,7 +54,7 @@ public slots:
 	void onExitRoomFail(const QString &error);
 	void onPlayerEnter(quint64 id, const QString &nickname);
 	void onPlayerExit(quint64 id);
-	void onPrepare(quint64 id, quint64 selfId);
+	void onPrepare(quint64 id, bool flag, quint64 selfId);
 	void onGameBegin(const QVector<QVector<int>> &map, const QVector<QPair<quint64, QPoint>> &playerPosition);
 	void onMark(quint64 id, int score);
 	void onGameEnd(const QVector<QPair<quint64, int>> &rank, quint64 id);
@@ -65,7 +65,7 @@ private slots:
 
 signals:
 	void exitRoomRequest();
-	void prepareRequest();
+	void prepareRequest(bool prepare);
 	void exitRoomSuccess();
 	void moveRequest(Direction direction);
 	void gameEnd(const QVector<QPair<QString, int>> &rank, int self);

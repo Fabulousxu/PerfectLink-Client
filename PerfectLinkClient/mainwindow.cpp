@@ -65,7 +65,7 @@ MainWindow::MainWindow(QWidget *parent)
     /* 准备处理 */
     connect(gameWindow, &GameWindow::prepareRequest, socket, &Socket::onPrepareRequest);
     connect(socket, &Socket::playerPrepare
-        , this, [this](quint64 id) {gameWindow->onPrepare(id, accountInfomation.id); });
+        , gameWindow, [this](quint64 id, bool prepare) { gameWindow->onPrepare(id, prepare, accountInfomation.id); });
 
     /* 房间人数变动处理 */
     connect(socket, &Socket::playerEnter, gameWindow, &GameWindow::onPlayerEnter);

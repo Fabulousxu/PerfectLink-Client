@@ -125,7 +125,6 @@ void GameWindow::onEnterRoomSuccess(const QVector<QPair<quint64, QPair<QString, 
 		if (playerInfomation[0].second.second) {
 			ui->prepare2Label->show();
 		} else { ui->prepare2Label->hide(); }
-		ui->prepare2Label->hide();
 		ui->player2Display->show();
 		playerDisplay.insert(playerInfomation[0].first, ui->player2Display);
 	}
@@ -159,6 +158,12 @@ void GameWindow::onEnterRoomSuccess(const QVector<QPair<quint64, QPair<QString, 
 		ui->player4Display->show();
 		playerDisplay.insert(playerInfomation[2].first, ui->player4Display);
 	}
+
+	ui->prepareButton->setText("准 备");
+	ui->prepareButton->setStyleSheet("QPushButton {\n	color: rgb(255, 255, 255);\n	background-color: rgb(129, 86, 0);\n	border: 2px solid rgb(255, 255, 255);\n	border-radius: 15px;\n	padding: 20px 40px 20px 40px;\n}\nQPushButton:hover {\n	background-color: rgb(216, 189, 122);\n}\nQPushButton:pressed {\n	background-color: rgb(76, 51, 0);\n}");
+	ui->prepareButton->show();
+	ui->exitRoomButton->show();
+	isPrepare = false;
 }
 
 void GameWindow::onPlayerEnter(quint64 id, const QString &nickname)
@@ -174,7 +179,7 @@ void GameWindow::onPlayerEnter(quint64 id, const QString &nickname)
 		ui->prepare2Label->hide();
 		ui->player2Display->show();
 		playerDisplay.insert(id, ui->player2Display);
-	}else if (playerDisplay.size() == 1) {
+	} else if (playerDisplay.size() == 1) {
 		ui->nickname3Label->setText(nickname);
 		ui->score3Label->setText("0");
 		nicknameLabel.insert(id, ui->nickname3Label);
@@ -210,11 +215,23 @@ void GameWindow::onPlayerExit(quint64 id)
 	gameCanvas->removePlayer(id);
 }
 
-void GameWindow::onPrepare(quint64 id, quint64 selfId)
+void GameWindow::onPrepare(quint64 id, bool flag, quint64 selfId)
 {
 	if (id == selfId) {
-		ui->prepareButton->setText("取消准备");
-		ui->prepareButton->setStyleSheet("QPushButton {\n	color: rgb(255, 255, 255);\n	background-color: rgb(117, 117, 117);\n	border: 2px solid rgb(255, 255, 255);\n	border-radius: 15px;\n	padding: 20px 40px 20px 40px;\n}\nQPushButton:hover {\n	background-color: rgb(163, 163, 163);\n}\nQPushButton:pressed {\n	background-color: rgb(58, 58, 58);\n}");
+		isPrepare = flag;
+		if (flag) {
+			ui->exitRoomButton->hide();
+			ui->prepareButton->setText("取消准备");
+			ui->prepareButton->setStyleSheet("QPushButton {\n	color: rgb(255, 255, 255);\n	background-color: rgb(117, 117, 117);\n	border: 2px solid rgb(255, 255, 255);\n	border-radius: 15px;\n	padding: 20px 40px 20px 40px;\n}\nQPushButton:hover {\n	background-color: rgb(163, 163, 163);\n}\nQPushButton:pressed {\n	background-color: rgb(58, 58, 58);\n}");
+		} else {
+			ui->exitRoomButton->show();
+			ui->prepareButton->setText("准 备");
+			ui->prepareButton->setStyleSheet("QPushButton {\n	color: rgb(255, 255, 255);\n	background-color: rgb(129, 86, 0);\n	border: 2px solid rgb(255, 255, 255);\n	border-radius: 15px;\n	padding: 20px 40px 20px 40px;\n}\nQPushButton:hover {\n	background-color: rgb(216, 189, 122);\n}\nQPushButton:pressed {\n	background-color: rgb(76, 51, 0);\n}");
+		}
+	} else {
+		if (flag) {
+			prepareLabel[id]->show();
+		} else { prepareLabel[id]->hide(); }
 	}
 }
 
@@ -241,6 +258,7 @@ void GameWindow::onGameEnd(const QVector<QPair<quint64, int>> &rank, quint64 id)
 {
 	delete gameCanvas;
 	gameCanvas = nullptr;
+	countdownTimer->stop();
 	QVector<QPair<QString, int>> gameRank;
 	int self;
 	for (int i = 0; i < rank.size(); ++i) {
@@ -257,7 +275,7 @@ void GameWindow::onExitRoomButton()
 
 void GameWindow::onPrepareButton()
 {
-	emit prepareRequest();
+	emit prepareRequest(!isPrepare);
 }
 
 void GameWindow::onExitRoomSuccess()
@@ -286,7 +304,7 @@ void GameWindow::onCreateRoomSuccess(quint64 rid, quint64 id, const QString &nic
 	ui->timeLabel->setText(QString::number(time));
 	QString modeText[4] = { "单人模式", "双人对战", "三人对战", "四人对战" };
 	ui->modeLabel->setText(modeText[mode]);
-	
+
 	ui->nickname1Label->setText(nickname);
 	ui->score1Label->setText("0");
 	nicknameLabel.insert(id, ui->nickname1Label);
@@ -297,6 +315,12 @@ void GameWindow::onCreateRoomSuccess(quint64 rid, quint64 id, const QString &nic
 	ui->player2Display->hide();
 	ui->player3Display->hide();
 	ui->player4Display->hide();
+
+	ui->prepareButton->setText("准 备");
+	ui->prepareButton->setStyleSheet("QPushButton {\n	color: rgb(255, 255, 255);\n	background-color: rgb(129, 86, 0);\n	border: 2px solid rgb(255, 255, 255);\n	border-radius: 15px;\n	padding: 20px 40px 20px 40px;\n}\nQPushButton:hover {\n	background-color: rgb(216, 189, 122);\n}\nQPushButton:pressed {\n	background-color: rgb(76, 51, 0);\n}");
+	ui->prepareButton->show();
+	ui->exitRoomButton->show();
+	isPrepare = false;
 }
 
 void GameWindow::showError(const QString &error) {
