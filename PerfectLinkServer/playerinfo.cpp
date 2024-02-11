@@ -1,14 +1,13 @@
 #include "playerinfo.h"
 #include <QRandomGenerator>
 
-QMutex id_player_mutex;
+QMutex id_player_mutex; /* 调用id_player_map的时候需要上的锁 */
 QMap<quint64, PlayerInfo *> id_player_map;
-constexpr quint64 ID_MAX = 3000;
-constexpr char ACCOUNT_FILE_PATH[]="./data/account.json";
+constexpr quint64 ID_MAX = 3000; /* 玩家人数上限 */
+constexpr char ACCOUNT_FILE_PATH[]="./data/account.json"; /* 用户数据存储位置 */
+constexpr quint8 PASSWORD_LENGTH_LIMIT[2]={4,26}; /* 密码长度限制 */
+QJsonObject PlayerInfo::accountsJson={}; /* 用户数据JSON */
 
-// TODO: 现在用Map只是权宜之计，后面是要改用数据库维护的
-
-QJsonObject PlayerInfo::accountsJson={};
 PlayerInfo::PlayerInfo(const QString &nickName_, const QString &password_)
     :nickName(nickName_),password(password_){}
 quint64 PlayerInfo::add(const QString &nickName, const QString &password)
@@ -38,6 +37,7 @@ quint64 PlayerInfo::add(const QString &nickName, const QString &password)
 }
 bool PlayerInfo::remove(quint64 id)
 {
+    QMutexLocker locker(&id_player_mutex);
     if(!id_player_map.contains(id)) return false;
     PlayerInfo *pInfo=id_player_map.value(id);
     id_player_map.remove(id);
@@ -71,9 +71,9 @@ bool PlayerInfo::load()
 PasswordSecurity PlayerInfo::getPasswordSecurity(const QString &password)
 {
     auto len=password.size();
-    if(len<6)
+    if(len<PASSWORD_LENGTH_LIMIT[0])
         return PasswordSecurity::SHORT;
-    if(len>26)
+    if(len>PASSWORD_LENGTH_LIMIT[1])
         return PasswordSecurity::LONG;
     int hasABC=0, hasNumber=0, hasUnderline=0;
     for(auto c:password)

@@ -3,7 +3,7 @@
 #include <qdebug.h>
 #include <qeventloop.h>
 
-#define SCORE_SINGLE 20 //单次得分20
+constexpr quint8 SCORE_SINGLE = 20; //单次得分20
 QMutex game_mutex;
 
 Player::Player(QPoint p)
@@ -49,7 +49,7 @@ Game::Game(
 }
 Game::~Game()
 {
-    for (auto p : player) {
+    foreach (auto p , player) {
         delete p;
     }
     player.clear();
@@ -108,7 +108,7 @@ void Game::onMove(quint64 id, Direction d) {
     player->moveCoolDownTimer->start();
     qDebug() << "before move: " << player->position;
     if (isFloor(getBlock(neighbor(player->position, d)))) {
-        for (auto p : this->player) {
+        foreach (auto p , this->player) {
             if (neighbor(player->position, d) == p->position) {
                 emit showMovePlayer(id, false, d);
                 return;
@@ -165,7 +165,7 @@ QVector<QPoint> Game::matchTurn(const QPoint &a, const QPoint &b) {
 }
 
 QVector<QPoint> Game::matchTurn2(const QPoint &a, const QPoint &b) {
-    QVector<QPoint> path, tmp;
+    QVector<QPoint> path;
     auto width = getWidth();
     auto height = getHeight();
     int pos[2] = { 0 }, flag = true, length, minLength = (width + height) * 2;
@@ -237,11 +237,6 @@ void Game::select(quint64 id, const QPoint &p) {
         }
     }
     emit showSelectBlock(id, p);
-    ///* 以下防止粘包 */
-    //QEventLoop loop;
-    //QTimer::singleShot(180, [&loop] { loop.quit(); });
-    //loop.exec();
-    ///* *********** */
     if (player->select) {
         auto oldSelect = *player->select;
         auto path = match(oldSelect, p);
@@ -252,11 +247,6 @@ void Game::select(quint64 id, const QPoint &p) {
         } else {
             player->score += SCORE_SINGLE;
             emit showMatchPath(id, path);
-            ///* 以下防止粘包 */
-            //QEventLoop loop1;
-            //QTimer::singleShot(180, [&loop1] { loop1.quit(); });
-            //loop1.exec();
-            ///* *********** */
             emit showScoreChanged(id, player->score);
             delete player->select; 
             player->select = nullptr;

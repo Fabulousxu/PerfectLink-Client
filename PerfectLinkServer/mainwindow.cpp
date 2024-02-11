@@ -2,8 +2,7 @@
 #include "ui_mainwindow.h"
 #include "playerinfo.h"
 
-//TODO: Address? Port?
-#define SERVER_PORT 11080
+constexpr quint16 SERVER_PORT=11080; /* 监听端口号 */
 
 MainWindow::MainWindow(QWidget *parent)
     : QWidget(parent)
@@ -11,11 +10,10 @@ MainWindow::MainWindow(QWidget *parent)
     , server(new QTcpServer(this))
 {
     ui->setupUi(this);
-
-    PlayerInfo::load();
-    PlayerSocket::setWidget(ui->userTable,ui->stateDisplay);
-    server->listen(QHostAddress::Any, SERVER_PORT);
-    connect(server,&QTcpServer::newConnection, this, &MainWindow::onNewConnection);
+    PlayerInfo::load(); //读取用户数据
+    PlayerSocket::setWidget(ui->userTable,ui->stateDisplay); //设置控件
+    server->listen(QHostAddress::Any, SERVER_PORT); //监听端口
+    connect(server,&QTcpServer::newConnection, this, &MainWindow::onNewConnection); //连接新用户信号
 }
 
 void MainWindow::onNewConnection()//来了新的连接
@@ -24,7 +22,6 @@ void MainWindow::onNewConnection()//来了新的连接
     auto sock=server->nextPendingConnection();
     PlayerSocket *client=new PlayerSocket(sock,this);
     clients.append(client);
-    //TODO: 记录用户变化
 }
 
 MainWindow::~MainWindow()

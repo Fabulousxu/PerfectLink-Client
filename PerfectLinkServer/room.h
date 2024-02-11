@@ -1,5 +1,6 @@
 #ifndef ROOM_H
 #define ROOM_H
+#include "qmutex.h"
 #pragma once
 #include "playersocket.h"
 class Room : public QObject
@@ -29,7 +30,12 @@ public:
      * @param id 移除房间的id值
      */
     static bool remove(quint64 id);
-
+    /**
+     * @brief 获取房间列表
+     * @param playerLimit 搜索的房间列表信息
+     * @param count 索取的房间个数（默认5）
+     * @return 一个房间列表
+     */
     static QList<Room*> getSomeRooms(int playerLimit, int count=5);
 
     /**
@@ -94,11 +100,10 @@ private:
     );
 
     QMap<PlayerSocket*, bool> player_state_map; //[0]房主
+    QMutex player_state_mutex;
     quint64 id; //0是未分配
     Game *game;
     int playerLimit;
-    int patternNumber;
-    int time;
 
     /**
      * @brief 给房内玩家群发

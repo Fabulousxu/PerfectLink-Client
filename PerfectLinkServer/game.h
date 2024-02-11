@@ -89,6 +89,8 @@ public:
 
     int getWidth() const { return block.size(); }
     int getHeight() const { return block.empty() ? 0 : block[0].size(); }
+    int getPatternNumber() const{return patternNumber;}
+    int getTime() const {return time;}
     const QVector<QVector<int>> &getBlock() { return block; } /* 获取方块 */
     void initializeBlock(int h, int w, QVector<int> pattern); /* 初始化地图 */
     const auto &getPlayer() { return player; }

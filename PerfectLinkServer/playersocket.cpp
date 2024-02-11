@@ -4,13 +4,21 @@
 #include <QJsonArray>
 #include <QRandomGenerator>
 
-
+//---------------------------大小端-----------------------------------
 bool isLittleEndian() {
-    int num = 0x1;
+    static const int num = 0x1;
     return *(char *)(&num);
 }
-
-bool isBigEndian() { return !isLittleEndian(); }
+/**
+ * @brief 判断本地(服务端)是不是大端
+ * @return 是则true
+ */
+inline bool isBigEndian() { return !isLittleEndian(); }
+/**
+ * @brief 字节流->数字
+ * @param numBytes 数据字节流
+ * @return 无符号32位整数
+ */
 quint32 fromBigEndian(const QByteArray &numBytes) {
     quint32 numInt;
     auto numChar=numBytes.data();
@@ -24,7 +32,11 @@ quint32 fromBigEndian(const QByteArray &numBytes) {
     }
     return numInt;
 }
-
+/**
+ * @brief 数字->大端数据流
+ * @param num 数字
+ * @return 大端数据流
+ */
 QByteArray toBigEndian(quint32 num) {
     char numChar[5];
     if (isBigEndian()) {
@@ -39,18 +51,19 @@ QByteArray toBigEndian(quint32 num) {
     return QByteArray(numChar, 4);
 }
 
+//-----------------------------------变量声明------------------------------
 namespace Reply
 {
-#define ErrDef(errorName, errorString) constexpr char (errorName)[]=(errorString)
-ErrDef(ID_ERROR, "ID doesn\'t exist");
-ErrDef(PASSWORD_ERROR, "Wrong password");
-ErrDef(PASSWORD_SHORT, "Password is too short");
-ErrDef(PASSWORD_LONG, "Password is too long");
-ErrDef(PASSWORD_SIMPLE, "Password should contains more than 2 kinds of letters, numbers and underline");
-ErrDef(PASSWORD_WRONG_CHAR, "Password should be composed of English letters, numbers and underline");
-ErrDef(ROOM_ERROR, "Room doesn\'t exist");
-ErrDef(ROOM_FULL, "Too many players in room");
-ErrDef(SYNC_ERROR, "Bad network");
+#define ErrDef(errorName, errorString) static constexpr char (errorName)[]=(errorString)
+ErrDef(ID_ERROR, "ID不存在");
+ErrDef(PASSWORD_ERROR, "密码错误");
+ErrDef(PASSWORD_SHORT, "密码过短");
+ErrDef(PASSWORD_LONG, "密码过长");
+ErrDef(PASSWORD_SIMPLE, "密码需包含字母/数字/下划线的两种及以上");
+ErrDef(PASSWORD_WRONG_CHAR, "密码不应包含除字母/数字/下划线以外的字符");
+ErrDef(ROOM_ERROR, "房间不存在");
+ErrDef(ROOM_FULL, "房间玩家已满");
+ErrDef(SYNC_ERROR, "网络异常，同步错误");
 #undef ErrDef
 }
 extern QMap<quint64, PlayerInfo*> id_player_map;
@@ -76,14 +89,14 @@ PlayerSocket::PlayerSocket(QTcpSocket *socket_,QWidget *parent)
 }
 void PlayerSocket::setWidget(QTableWidget *userTable_,QTextBrowser *stateDisplay_)
 {
-    RUN_ONLY_ONCE()
+    RUN_ONLY_ONCE(;)
     if(!userTable) userTable=userTable_;
     if(!stateDisplay) stateDisplay=stateDisplay_;
 }
 QJsonObject PlayerSocket::readRequest()
 {
-    quint32 length=fromBigEndian(socket->read(4));//TODO 大小端
-    QByteArray bytes=socket->read(length);
+    auto length=fromBigEndian(socket->read(4));
+    auto bytes=socket->read(length);
     return QJsonDocument::fromJson(bytes).object();
 }
 void PlayerSocket::reply(Reply::EType replyCode, const QJsonObject &data)
@@ -94,11 +107,7 @@ void PlayerSocket::reply(Reply::EType replyCode, const QJsonObject &data)
     });
     auto bytes=QJsonDocument(msg).toJson();
     quint32 length=bytes.length();
-    //TODO 整数to Bytes
-
-    //qDebug() << "send to<" << socket->peerAddress() << ':' << socket->peerPort()
-    //    << ">:[[\n" << msg << "\n]]";
-    qDebug() << "send bytes:\n\t" << toBigEndian(length) + bytes << "\nsend json:\n\t" << msg << "\n\n";
+    qDebug() << "send json:\n\t" << msg << "\n\n";
     socket->write(toBigEndian(length) + bytes);
 }
 void PlayerSocket::setPlayerState(EState state_)
@@ -345,7 +354,7 @@ void PlayerSocket::onEnterRoom(quint64 roomId)
 void PlayerSocket::onExitRoom() //这里是申请退出房间
 {
     if(state!=IN_ROOM || (!gamingRoom)) return;
-    //TODO 退出失败的判断
+    //TODO 退出失败的判断（也许不需要？）
     gamingRoom->removePlayer(this);
     reply(Reply::EXIT_ROOM, {{"state",true}});
     state=ONLINE;
@@ -366,11 +375,8 @@ void PlayerSocket::onMove(int direction)
 }
 
 PlayerSocket::~PlayerSocket()
-{
-    //if(id) PlayerInfo::remove(id);
-    //TODO 没想好2024.2.1
-    //if(gamingRoom) Room::remove(gamingRoom->getIdString().toInt());
-}
+{/* TODO 貌似没什么需要做的*/}
+
 void PlayerSocket::onGameBegin(const QJsonObject &data)
 {
     if(state!=PREPARE)

@@ -5,6 +5,7 @@
 #include <QComboBox>
 #include <QTextBrowser>
 #include <QTableWidget>
+#include <QMutex>
 #include "game.h"
 class Room;
 
@@ -40,12 +41,12 @@ public:
      * @param stateDisplay_ 控件
      */
     static void setWidget(QTableWidget *userTable_, QTextBrowser *stateDisplay_);
+
     /**
      * @brief 读取信息并将收到的信息变成Json
      * @return 一个JSON对象
      */
     QJsonObject readRequest();
-
     /**
      * @brief 回复给客户一条消息
      * @param replyCode 回复消息的类别代号
